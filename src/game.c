@@ -2,6 +2,9 @@
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
 #include "simple_logger.h"
+#include "my_entity.h"
+#include "my_player.h"
+#include "my_level.h"
 
 int main(int argc, char * argv[])
 {
@@ -15,6 +18,10 @@ int main(int argc, char * argv[])
     Sprite *mouse;
     Vector4D mouseColor = {255,100,255,200};
     
+	Player *currentPlayer;
+	Uint8 W, A, S, D;
+
+	Room test;
     /*program initializtion*/
     init_logger("gf2d.log");
     slog("---==== BEGIN ====---");
@@ -30,9 +37,19 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     
+	entity_manager_init(1024);
+	scene_manager_init(8);
+
+	currentPlayer = player_new();
+	if (currentPlayer == NULL)
+	{
+		return 0;
+	}
     /*demo setup*/
     sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
+
+	//test = level_room_new("resources/Rooms/Room_00.json", vector2d(0, 0));
     /*main game loop*/
     while(!done)
     {
@@ -42,13 +59,37 @@ int main(int argc, char * argv[])
         SDL_GetMouseState(&mx,&my);
         mf+=0.1;
         if (mf >= 16.0)mf = 0;
-        
+
+		if (keys[SDL_SCANCODE_W])
+		{
+			W = true;
+		}
+		else { W = false; }
+		if (keys[SDL_SCANCODE_A])
+		{
+			A = true;
+		}
+		else { A = false; }
+		if (keys[SDL_SCANCODE_S])
+		{
+			S = true;
+		}
+		else { S = false; }
+		if (keys[SDL_SCANCODE_D])
+		{
+			D = true;
+		}
+		else { D = false; }
+
+		player_check_movement(W, A, S, D);
+		entity_update_all();
         
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
             gf2d_sprite_draw_image(sprite,vector2d(0,0));
-            
+			entity_draw_all();
+
             //UI elements last
             gf2d_sprite_draw(
                 mouse,
@@ -64,6 +105,8 @@ int main(int argc, char * argv[])
         if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
         slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
+	player_free(currentPlayer);
+
     slog("---==== END ====---");
     return 0;
 }
