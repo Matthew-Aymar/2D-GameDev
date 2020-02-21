@@ -3,6 +3,8 @@
 
 #include "gf2d_sprite.h"
 #include "my_entity.h"
+#include "my_collider.h"
+#include "my_room.h"
 
 typedef struct
 {
@@ -18,6 +20,8 @@ typedef struct
 	Sprite  *over_backward;
 	Sprite  *over_right;
 	Sprite  *over_idle;
+
+	Room *current;
 }Player;
 
 /*
@@ -68,6 +72,15 @@ void player_movement_overworld();
 
 //void player_attack();
 
+void player_check_col(RectCol *other);
+
 void player_free(Player *self);
 
+/*
+	@brief set the active room/rooms the player is in
+	@param pointer to the room
+*/
+void player_set_room(Room *rm);
+
+RectCol *player_get_rect();
 #endif

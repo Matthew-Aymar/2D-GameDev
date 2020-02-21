@@ -5,7 +5,9 @@
 #include "my_entity.h"
 #include "my_player.h"
 #include "my_level.h"
-
+#include "my_collider.h"//
+#include "my_tile.h"	//
+#include "my_room.h"	//
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
@@ -21,7 +23,11 @@ int main(int argc, char * argv[])
 	Player *currentPlayer;
 	Uint8 W, A, S, D;
 
-	Room test;
+	int x;
+	Room *test;
+	int testlayout[240];
+	//Sprite *tile;
+	//Tile *test;
     /*program initializtion*/
     init_logger("gf2d.log");
     slog("---==== BEGIN ====---");
@@ -45,11 +51,23 @@ int main(int argc, char * argv[])
 	{
 		return 0;
 	}
+
+	for (x = 0; x < 240; x++)
+	{
+		if (x < 20)
+			testlayout[x] = 1;
+		else
+			testlayout[x] = 0;
+	}
+
+	test = room_new(testlayout, 0, 0);
+	player_set_room(test);
     /*demo setup*/
     sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
 
-	//test = level_room_new("resources/Rooms/Room_00.json", vector2d(0, 0));
+	//tile = gf2d_sprite_load_image("images/Tiles/Wall_Top.png");
+	//test = tile_new(tile, vector2d(128, 0), vector2d(64, 64));
     /*main game loop*/
     while(!done)
     {
@@ -83,11 +101,14 @@ int main(int argc, char * argv[])
 
 		player_check_movement(W, A, S, D);
 		entity_update_all();
-        
+		//player_check_col(&test->col);
+
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
             gf2d_sprite_draw_image(sprite,vector2d(0,0));
+			//tile_draw(test);
+			room_update(test);
 			entity_draw_all();
 
             //UI elements last

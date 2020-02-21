@@ -6,6 +6,7 @@
 
 static Player p = { 0 };
 static int lastdir;
+static Vector2D lastmove;
 
 /*Overworld Sprites*/
 static char *over_forward	= "images/PlayerSprites/MaribelleWalk_F.png";
@@ -18,7 +19,7 @@ static char *over_idle		= "images/PlayerSprites/MaribelleIdle.png";
 Player *player_new()
 {
 	p.player_ent = entity_new();
-	
+	p.player_ent->position = vector2d(256, 256);
 	if (p.player_ent == NULL)
 	{
 		slog("could not create player entity!");
@@ -39,6 +40,8 @@ Player *player_new()
 	p.player_ent->sprite = p.over_forward;
 	p.player_ent->fpl = 4;
 
+	p.player_ent->col = col_new_rect(p.player_ent->position.x, p.player_ent->position.y, 64, 64, 0);
+	
 	p.player_ent->scene = scene_by_name("all");
 
 	slog("Created new player & player entity.");
@@ -205,10 +208,15 @@ void player_movement_overworld()
 		ydist = 0;
 	}
 
+	lastmove.x = xdist * p.speed;
+	lastmove.y = ydist * p.speed;
+
 	d.x = p.player_ent->position.x + (xdist * p.speed);
 	d.y = p.player_ent->position.y + (ydist * p.speed);
+	//p.player_ent->position = d;
+	//p.player_ent->col.origin = d;
 
-	p.player_ent->position = d;
+	room_scroll(p.current, lastmove);
 
 	lastdir = p.dir;
 }
@@ -225,4 +233,26 @@ void player_free(Player *self)
 	memset(self, 0, sizeof(Entity));
 
 	slog("Freed player");
+}
+
+void player_check_col(RectCol *other)
+{
+	if (col_rect_rect(&p.player_ent->col, other) && other->solid == 1)
+	{
+		slog("Colliding!");
+		/*p.player_ent->position.x -= lastmove.x;
+		p.player_ent->position.y -= lastmove.y;*/
+		lastmove.x = 0;
+		lastmove.y = 0;
+	}
+}
+
+RectCol *player_get_rect()
+{
+	return &p.player_ent->col;
+}
+
+void player_set_room(Room *rm)
+{
+	p.current = rm;
 }
