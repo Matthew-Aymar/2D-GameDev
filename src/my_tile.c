@@ -20,7 +20,11 @@ Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid)
 
 void tile_draw(Tile *t)
 {
-	if (!t) return;
+	if (!t)
+	{
+		slog("null tile passed");
+		return;
+	}
 	gf2d_sprite_draw(
 		t->sprite,
 		t->origin,

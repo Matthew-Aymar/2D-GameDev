@@ -15,6 +15,19 @@ static Room room_b = { 0 };		//Bottom
 static Room room_br = { 0 };	//Bottom Right
 static int room_tiles = 240;
 
+static int testlayout[240] = {	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+								1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+								2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+
 typedef struct Room_Manager_S
 {
 	Room *rooms_active[9];
@@ -25,22 +38,12 @@ typedef struct Room_Manager_S
 		6	7	8
 		4 being the current room the player is in
 	*/
+	Sprite *wall_forward;
+	Sprite *wall_top;
+	Sprite *grass_full;
 }Room_Manager;
 
 static Room_Manager room_manager = { 0 };
-
-void room_manager_init()
-{
-	room_manager.rooms_active[0] = &room_tl;
-	room_manager.rooms_active[1] = &room_t;
-	room_manager.rooms_active[2] = &room_tr;
-	room_manager.rooms_active[3] = &room_l;
-	room_manager.rooms_active[4] = &room_c;
-	room_manager.rooms_active[5] = &room_r;
-	room_manager.rooms_active[6] = &room_bl;
-	room_manager.rooms_active[7] = &room_b;
-	room_manager.rooms_active[8] = &room_br;
-}
 
 void room_swap_top()
 {
@@ -70,32 +73,32 @@ void room_swap_left()
 	//create 3 new rooms in index 0, 3, 61
 }
 
-Room *room_new(int l[240], float xpos, float ypos)
+void *room_new(Room *rm, int l[240], float xpos, float ypos)
 {
 	int x;
 	Vector2D pos;
-	test_room.origin = vector2d(xpos, ypos);
+	slog("new room @ %f, %f", xpos, ypos);
+	rm->origin = vector2d(xpos, ypos);
 	for (x = 0; x < room_tiles; x++)
 	{
-		pos.x = test_room.origin.x + (64 * (x - (20 * (int)(x * 0.05))));
-		pos.y = test_room.origin.y + (64 * (int)(x * 0.05));
+		pos.x = rm->origin.x + (64 * (x - (20 * (int)(x * 0.05))));
+		pos.y = rm->origin.y + (64 * (int)(x * 0.05));
 		if (l[x] == 2)
 		{
-			test_room.tiles[x] = tile_new(gf2d_sprite_load_image("images/Tiles/Wall_Forward.png"),
+			rm->tiles[x] = tile_new(room_manager.wall_forward,
 				pos, vector2d(64, 64), 1);
 		}
 		else if (l[x] == 1)
 		{
-			test_room.tiles[x] = tile_new(gf2d_sprite_load_image("images/Tiles/Wall_Top.png"),
+			rm->tiles[x] = tile_new(room_manager.wall_top,
 				pos, vector2d(64, 64), 1);
 		}
 		else
 		{
-			test_room.tiles[x] = tile_new(gf2d_sprite_load_image("images/Tiles/Grass_Full.png"),
+			rm->tiles[x] = tile_new(room_manager.grass_full,
 				pos, vector2d(64, 64), 0);
 		}
 	}
-	return &test_room;
 }
 
 void room_update(Room *rm)
@@ -103,7 +106,6 @@ void room_update(Room *rm)
 	for (int x = 0; x < room_tiles; x++)
 	{
 		tile_draw(&test_room.tiles[x]);
-		player_check_col(&test_room.tiles[x].col);
 	}
 }
 
@@ -168,4 +170,70 @@ void room_free(Room *rm)
 		tile_free(&rm->tiles[x]);
 	}
 	memset(rm, 0, sizeof(Room));
+}
+
+void room_manager_close()
+{
+	int x;
+	for (x = 0; x < 9; x++)
+	{
+		room_free(room_manager.rooms_active[x]);
+	}
+	gf2d_sprite_free(room_manager.wall_forward);
+	gf2d_sprite_free(room_manager.wall_top);
+	gf2d_sprite_free(room_manager.grass_full);
+	memset(&room_manager, 0, sizeof(Room_Manager));
+}
+
+void room_manager_init()
+{
+	int x;
+	Vector2D pos;
+	pos.x = -1280;
+	pos.y = -768;
+	room_manager.rooms_active[0] = &room_tl;
+	room_manager.rooms_active[1] = &room_t;
+	room_manager.rooms_active[2] = &room_tr;
+	room_manager.rooms_active[3] = &room_l;
+	room_manager.rooms_active[4] = &room_c;
+	room_manager.rooms_active[5] = &room_r;
+	room_manager.rooms_active[6] = &room_bl;
+	room_manager.rooms_active[7] = &room_b;
+	room_manager.rooms_active[8] = &room_br;
+
+	room_manager.wall_forward = gf2d_sprite_load_image("images/Tiles/Wall_Forward.png");
+	room_manager.wall_top = gf2d_sprite_load_image("images/Tiles/Wall_Top.png");
+	room_manager.grass_full = gf2d_sprite_load_image("images/Tiles/Grass_Full.png");
+
+	for (x = 0; x < 9; x++)
+	{
+		room_new(room_manager.rooms_active[x],
+					testlayout, 
+					pos.x + (1280 * (x - (3 * (int)(x * 0.334)))),
+					pos.y + (768 * (int)(x * 0.334)));
+	}
+
+	atexit(room_manager_close);
+}
+
+void room_manager_update()
+{
+	int x;
+	for (x = 0; x < 9; x++)
+	{
+		room_update(room_manager.rooms_active[x]);
+		if (x == 4)
+		{
+			player_check_col(&test_room.tiles[x].col);
+		}
+	}
+}
+
+void room_manager_scroll(Vector2D movement)
+{
+	int x;
+	for (x = 0; x < 9; x++)
+	{
+		room_scroll(room_manager.rooms_active[x], movement);
+	}
 }
