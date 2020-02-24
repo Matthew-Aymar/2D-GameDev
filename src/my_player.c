@@ -213,8 +213,6 @@ void player_movement_overworld()
 
 	d.x = p.player_ent->position.x + (xdist * p.speed);
 	d.y = p.player_ent->position.y + (ydist * p.speed);
-	//p.player_ent->position = d;
-	//p.player_ent->col.origin = d;
 
 	room_scroll(p.current, lastmove);
 
@@ -240,8 +238,6 @@ void player_check_col(RectCol *other)
 	if (col_rect_rect(&p.player_ent->col, other) && other->solid == 1)
 	{
 		slog("Colliding!");
-		/*p.player_ent->position.x -= lastmove.x;
-		p.player_ent->position.y -= lastmove.y;*/
 		lastmove.x = 0;
 		lastmove.y = 0;
 	}
