@@ -3,7 +3,6 @@
 #include "my_player.h"
 #include "my_collider.h"
 
-static Room test_room = { 0 };
 static Room room_tl = { 0 };	//Top Left
 static Room room_t = { 0 };		//Top
 static Room room_tr = { 0 };	//Top Right
@@ -15,18 +14,18 @@ static Room room_b = { 0 };		//Bottom
 static Room room_br = { 0 };	//Bottom Right
 static int room_tiles = 240;
 
-static int testlayout[240] = {	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-								1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+static int testlayout[240] = {	1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+								1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+								2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2,
+								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-								1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-								1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-								2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+								1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
 typedef struct Room_Manager_S
 {
@@ -45,35 +44,7 @@ typedef struct Room_Manager_S
 
 static Room_Manager room_manager = { 0 };
 
-void room_swap_top()
-{
-	//free 6, 7, 8
-	//swap 3 -> 6, 4 -> 7, 5 -> 8, 1 -> 3, 2 -> 4, 3 -> 5
-	//create 3 new rooms in index 0, 1, 2
-}
-
-void room_swap_right()
-{
-	//free 0, 3, 6
-	//swap 1 -> 0, 4 -> 3, 7 -> 6, 2 -> 1, 5 -> 4, 8 -> 7
-	//create 3 new rooms in index 2, 5, 8
-}
-
-void room_swap_bot()
-{
-	//free 0, 1, 2
-	//swap 3 -> 0, 4 -> 1, 5 -> 2, 6 -> 3, 7 -> 4, 8 -> 5
-	//create 3 new rooms in index 6, 7, 8
-}
-
-void room_swap_left()
-{
-	//free 2, 5, 8
-	//swap 1 -> 2, 4 -> 5, 7 -> 8, 0 -> 1, 3 -> 4, 6 -> 7
-	//create 3 new rooms in index 0, 3, 61
-}
-
-void *room_new(Room *rm, int l[240], float xpos, float ypos)
+void *room_new(Room *rm, int l[240], float xpos, float ypos, int index)
 {
 	int x;
 	Vector2D pos;
@@ -99,13 +70,14 @@ void *room_new(Room *rm, int l[240], float xpos, float ypos)
 				pos, vector2d(64, 64), 0);
 		}
 	}
+	rm->index = index;
 }
 
 void room_update(Room *rm)
 {
 	for (int x = 0; x < room_tiles; x++)
 	{
-		tile_draw(&test_room.tiles[x]);
+		tile_draw(&rm->tiles[x]);
 	}
 }
 
@@ -114,50 +86,91 @@ void room_scroll(Room *rm, Vector2D movement)
 	int x, y;
 	Vector2D previous;
 	float offx, offy;
-	for (x = 0; x < room_tiles; x++)
+	Vector2D pos;
+	if (rm->index == 4)
 	{
-		if (rm->tiles[x].col.solid == 1)
+		for (x = 0; x < room_tiles; x++)
 		{
-			previous.x = rm->tiles[x].col.origin.x;
-			previous.y = rm->tiles[x].col.origin.y;
-			rm->tiles[x].col.origin.x -= (movement.x);
-			rm->tiles[x].col.origin.y -= (movement.y);
-			if (col_rect_rect(player_get_rect(), &rm->tiles[x].col))
+			if (rm->tiles[x].col.solid == 1)
 			{
-				offx = rm->tiles[x].col.origin.x - previous.x;
-				offy = rm->tiles[x].col.origin.y - previous.y;
-				rm->tiles[x].col.origin.x = previous.x;
-				rm->tiles[x].col.origin.y = previous.y;
-				for (y = x - 1; y >= 0; y--)
+				previous.x = rm->tiles[x].col.origin.x;
+				previous.y = rm->tiles[x].col.origin.y;
+				rm->tiles[x].col.origin.x -= (movement.x);
+				rm->tiles[x].col.origin.y -= (movement.y);
+				if (col_rect_rect(player_get_rect(), &rm->tiles[x].col))
 				{
-					if (rm->tiles[y].col.solid == 1)
+					offx = rm->tiles[x].col.origin.x - previous.x;
+					offy = rm->tiles[x].col.origin.y - previous.y;
+					rm->tiles[x].col.origin.x = previous.x;
+					rm->tiles[x].col.origin.y = previous.y;
+					for (y = x - 1; y >= 0; y--)
 					{
-						rm->tiles[y].col.origin.x -= offx;
-						rm->tiles[y].col.origin.y -= offy;
-						rm->tiles[y].origin.x = rm->tiles[y].col.origin.x;
-						rm->tiles[y].origin.y = rm->tiles[y].col.origin.y;
+						if (rm->tiles[y].col.solid == 1)
+						{
+							rm->tiles[y].col.origin.x -= offx;
+							rm->tiles[y].col.origin.y -= offy;
+							rm->tiles[y].origin.x = rm->tiles[y].col.origin.x;
+							rm->tiles[y].origin.y = rm->tiles[y].col.origin.y;
+						}
+						else
+						{
+							rm->tiles[y].origin.x += (movement.x);
+							rm->tiles[y].origin.y += (movement.y);
+						}
 					}
-					else
-					{
-						rm->tiles[y].origin.x += (movement.x);
-						rm->tiles[y].origin.y += (movement.y);
-					}
+					return;
 				}
-				return;
+				else
+				{
+					rm->tiles[x].origin.x = rm->tiles[x].col.origin.x;
+					rm->tiles[x].origin.y = rm->tiles[x].col.origin.y;
+				}
+				y++;
 			}
 			else
 			{
-				rm->tiles[x].origin.x = rm->tiles[x].col.origin.x;
-				rm->tiles[x].origin.y = rm->tiles[x].col.origin.y;
+				rm->tiles[x].origin.x -= (movement.x);
+				rm->tiles[x].origin.y -= (movement.y);
 			}
-			y++;
+		}
+	}
+	else
+	{
+		if (rm->index == 0 || rm->index == 3 || rm->index == 6)
+		{
+			rm->origin.x = room_manager.rooms_active[4]->origin.x - 1280;
+		}
+		else if (rm->index == 2 || rm->index == 5 || rm->index == 8)
+		{
+			rm->origin.x = room_manager.rooms_active[4]->origin.x + 1280;
 		}
 		else
 		{
-			rm->tiles[x].origin.x -= (movement.x);
-			rm->tiles[x].origin.y -= (movement.y);
+			rm->origin.x = room_manager.rooms_active[4]->origin.x;
+		}
+
+		if (rm->index == 0 || rm->index == 1 || rm->index == 2)
+		{
+			rm->origin.y = room_manager.rooms_active[4]->origin.y - 768;
+		}
+		else if (rm->index == 6 || rm->index == 7 || rm->index == 8)
+		{
+			rm->origin.y = room_manager.rooms_active[4]->origin.y + 768;
+		}
+		else
+		{
+			rm->origin.y = room_manager.rooms_active[4]->origin.y;
+		}
+
+		for (x = 0; x < room_tiles; x++)
+		{
+			pos.x = rm->origin.x + (64 * (x - (20 * (int)(x * 0.05))));
+			pos.y = rm->origin.y + (64 * (int)(x * 0.05));
+			rm->tiles[x].origin.x = pos.x;
+			rm->tiles[x].origin.y = pos.y;
 		}
 	}
+
 	rm->origin.x -= (movement.x);
 	rm->origin.y -= (movement.y);
 }
@@ -210,7 +223,8 @@ void room_manager_init()
 		room_new(room_manager.rooms_active[x],
 					testlayout, 
 					pos.x + (1280 * (x - (3 * (int)(x * 0.334)))),
-					pos.y + (768 * (int)(x * 0.334)));
+					pos.y + (768 * (int)(x * 0.334)), 
+					x);
 	}
 
 	atexit(room_manager_close);
@@ -224,7 +238,7 @@ void room_manager_update()
 		room_update(room_manager.rooms_active[x]);
 		if (x == 4)
 		{
-			player_check_col(&test_room.tiles[x].col);
+			player_check_col(&room_manager.rooms_active[x]->tiles[x].col);
 		}
 	}
 }
@@ -232,8 +246,35 @@ void room_manager_update()
 void room_manager_scroll(Vector2D movement)
 {
 	int x;
+	room_scroll(room_manager.rooms_active[4], movement);
 	for (x = 0; x < 9; x++)
 	{
+		if (x == 4)
+			continue;
 		room_scroll(room_manager.rooms_active[x], movement);
+	}
+}
+
+void room_manager_swap(float xpos, float ypos)
+{
+	Room *swap;
+	if (xpos < room_manager.rooms_active[4]->origin.x)
+	{
+		//swap left
+		swap = room_manager.rooms_active[4];
+		room_manager.rooms_active[4] = room_manager.rooms_active[3];
+		room_manager.rooms_active[3] = swap;
+	}
+	else if (ypos < room_manager.rooms_active[4]->origin.y)
+	{
+		//swap bot
+	}
+	else if (xpos > room_manager.rooms_active[4]->origin.x + 1280)
+	{
+		//swap right
+	}
+	else if(ypos < room_manager.rooms_active[4]->origin.y + 768)
+	{
+		//swap top
 	}
 }

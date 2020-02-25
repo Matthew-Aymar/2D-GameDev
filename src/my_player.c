@@ -215,7 +215,6 @@ void player_movement_overworld()
 	d.y = p.player_ent->position.y + (ydist * p.speed);
 
 	room_manager_scroll(lastmove);
-
 	lastdir = p.dir;
 }
 

@@ -10,6 +10,7 @@ typedef struct Room_S
 	int *layout;		/*array containing the layout of the room*/
 	int maxtiles;		/*Maximum tiles in the room/array*/
 	Vector2D origin;	/*Starting position of the room*/
+	int index;			/*position in the room manager*/
 }Room;
 
 /*
@@ -18,7 +19,7 @@ typedef struct Room_S
 	@param max - number of values in the SJson array
 	@return a pointer to a new room
 */
-void *room_new(Room *rm, int l[240], float xpos, float ypos);
+void *room_new(Room *rm, int l[240], float xpos, float ypos, int index);
 
 /*
 	@brief updates the room, checks for collisions
@@ -60,5 +61,10 @@ void room_manager_scroll(Vector2D movement);
 	@free all the rooms associated with the room manager
 */
 void room_manager_close();
+
+/*
+	@brief checks if the player has entered a different room to allow for collisions
+*/
+void room_manager_swap(float xpos, float ypos);
 
 #endif
