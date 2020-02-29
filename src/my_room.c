@@ -40,15 +40,17 @@ typedef struct Room_Manager_S
 	Sprite *wall_forward;
 	Sprite *wall_top;
 	Sprite *grass_full;
+	int current;
 }Room_Manager;
 
 static Room_Manager room_manager = { 0 };
+
+static int swap;
 
 void *room_new(Room *rm, int l[240], float xpos, float ypos, int index)
 {
 	int x;
 	Vector2D pos;
-	slog("new room @ %f, %f", xpos, ypos);
 	rm->origin = vector2d(xpos, ypos);
 	for (x = 0; x < room_tiles; x++)
 	{
@@ -87,18 +89,47 @@ void room_scroll(Room *rm, Vector2D movement)
 	Vector2D previous;
 	float offx, offy;
 	Vector2D pos;
+
+	//If you have swapped the last frame
+	if (swap)
+	{
+		if (swap == 1)
+		{
+			rm->origin.y -= 3;
+		}
+		else if (swap == 3)
+		{
+			rm->origin.x -= 3;
+		}
+		else if (swap == 5)
+		{
+			rm->origin.x += 3;
+		}
+		else if (swap == 7)
+		{
+			rm->origin.y += 3;
+		}
+		swap = 0;
+		return;
+	}
+
+	//If it is the current/middle room
 	if (rm->index == 4)
 	{
+		//Loops through all tiles in the room and check for collision
 		for (x = 0; x < room_tiles; x++)
 		{
 			if (rm->tiles[x].col.solid == 1)
 			{
+				//Forcast tile collider positions
 				previous.x = rm->tiles[x].col.origin.x;
 				previous.y = rm->tiles[x].col.origin.y;
 				rm->tiles[x].col.origin.x -= (movement.x);
 				rm->tiles[x].col.origin.y -= (movement.y);
-				if (col_rect_rect(player_get_rect(), &rm->tiles[x].col))
+				//If it collides with the professor
+				if (col_rect_rect(player_get_rect(), &rm->tiles[x].col) || rm->index == swap)
 				{
+					//Revert all changes and return
 					offx = rm->tiles[x].col.origin.x - previous.x;
 					offy = rm->tiles[x].col.origin.y - previous.y;
 					rm->tiles[x].col.origin.x = previous.x;
@@ -136,6 +167,7 @@ void room_scroll(Room *rm, Vector2D movement)
 	}
 	else
 	{
+		//Lock other room positions based on the middle room
 		if (rm->index == 0 || rm->index == 3 || rm->index == 6)
 		{
 			rm->origin.x = room_manager.rooms_active[4]->origin.x - 1280;
@@ -162,12 +194,15 @@ void room_scroll(Room *rm, Vector2D movement)
 			rm->origin.y = room_manager.rooms_active[4]->origin.y;
 		}
 
+		//Move tiles
 		for (x = 0; x < room_tiles; x++)
 		{
 			pos.x = rm->origin.x + (64 * (x - (20 * (int)(x * 0.05))));
 			pos.y = rm->origin.y + (64 * (int)(x * 0.05));
 			rm->tiles[x].origin.x = pos.x;
 			rm->tiles[x].origin.y = pos.y;
+			rm->tiles[x].col.origin.x = pos.x;
+			rm->tiles[x].col.origin.y = pos.y;
 		}
 	}
 
@@ -227,6 +262,8 @@ void room_manager_init()
 					x);
 	}
 
+	swap = 0;
+
 	atexit(room_manager_close);
 }
 
@@ -257,24 +294,134 @@ void room_manager_scroll(Vector2D movement)
 
 void room_manager_swap(float xpos, float ypos)
 {
-	Room *swap;
-	if (xpos < room_manager.rooms_active[4]->origin.x)
+	Vector2D pos;
+	int x;
+	if (xpos + 32 < room_manager.rooms_active[4]->origin.x)
 	{
 		//swap left
-		swap = room_manager.rooms_active[4];
-		room_manager.rooms_active[4] = room_manager.rooms_active[3];
-		room_manager.rooms_active[3] = swap;
+		room_free(room_manager.rooms_active[2]);
+		room_free(room_manager.rooms_active[5]);
+		room_free(room_manager.rooms_active[8]);
+		
+		room_tr = room_t;
+		room_tr.index = 2;
+		room_r =  room_c;
+		room_r.index = 5;
+		room_br = room_b;
+		room_br.index = 8;
+
+		room_t = room_tl;
+		room_t.index = 1;
+		room_c = room_l;
+		room_c.index = 4;
+		room_b = room_bl;
+		room_b.index = 7;
+
+		room_new(&room_tl, testlayout, 
+			room_manager.rooms_active[4]->origin.x - 1280, 
+			room_manager.rooms_active[4]->origin.y + 768, 0);
+		room_new(&room_l, testlayout,
+			room_manager.rooms_active[4]->origin.x - 1280,
+			room_manager.rooms_active[4]->origin.y, 3);
+		room_new(&room_bl, testlayout,
+			room_manager.rooms_active[4]->origin.x - 1280,
+			room_manager.rooms_active[4]->origin.y - 768, 6);
+		swap = 3;
 	}
-	else if (ypos < room_manager.rooms_active[4]->origin.y)
+	else if (ypos + 32 > room_manager.rooms_active[4]->origin.y + 768)
 	{
 		//swap bot
+		room_free(room_manager.rooms_active[0]);
+		room_free(room_manager.rooms_active[1]);
+		room_free(room_manager.rooms_active[2]);
+
+		room_tl = room_l;
+		room_tl.index = 0;
+		room_t = room_c;
+		room_t.index = 1;
+		room_tr = room_r;
+		room_tr.index = 2;
+
+		room_l = room_bl;
+		room_l.index = 3;
+		room_c = room_b;
+		room_c.index = 4;
+		room_r = room_br;
+		room_r.index = 5;
+
+		room_new(&room_bl, testlayout,
+			room_manager.rooms_active[4]->origin.x - 1280,
+			room_manager.rooms_active[4]->origin.y - 768, 6);
+		room_new(&room_b, testlayout,
+			room_manager.rooms_active[4]->origin.x,
+			room_manager.rooms_active[4]->origin.y - 768, 7);
+		room_new(&room_br, testlayout,
+			room_manager.rooms_active[4]->origin.x + 1280,
+			room_manager.rooms_active[4]->origin.y - 768, 8);
+		swap = 7;
 	}
-	else if (xpos > room_manager.rooms_active[4]->origin.x + 1280)
+	else if (xpos + 32 > room_manager.rooms_active[4]->origin.x + 1280)
 	{
 		//swap right
+		room_free(room_manager.rooms_active[0]);
+		room_free(room_manager.rooms_active[3]);
+		room_free(room_manager.rooms_active[6]);
+
+		room_tl = room_t;
+		room_tl.index = 0;
+		room_l = room_c;
+		room_l.index = 3;
+		room_bl = room_b;
+		room_bl.index = 6;
+
+		room_t = room_tr;
+		room_t.index = 1;
+		room_c = room_r;
+		room_c.index = 4;
+		room_b = room_br;
+		room_b.index = 7;
+
+		room_new(&room_tr, testlayout,
+			room_manager.rooms_active[4]->origin.x + 1280,
+			room_manager.rooms_active[4]->origin.y + 768, 2);
+		room_new(&room_r, testlayout,
+			room_manager.rooms_active[4]->origin.x + 1280,
+			room_manager.rooms_active[4]->origin.y, 5);
+		room_new(&room_br, testlayout,
+			room_manager.rooms_active[4]->origin.x + 1280,
+			room_manager.rooms_active[4]->origin.y - 768, 8);
+		swap = 5;
 	}
-	else if(ypos < room_manager.rooms_active[4]->origin.y + 768)
+	else if(ypos + 32 < room_manager.rooms_active[4]->origin.y)
 	{
 		//swap top
+		room_free(room_manager.rooms_active[6]);
+		room_free(room_manager.rooms_active[7]);
+		room_free(room_manager.rooms_active[8]);
+
+		room_bl = room_l;
+		room_bl.index = 6;
+		room_b = room_c;
+		room_b.index = 7;
+		room_br = room_r;
+		room_br.index = 8;
+
+		room_l = room_tl;
+		room_l.index = 3;
+		room_c = room_t;
+		room_c.index = 4;
+		room_r = room_tr;
+		room_r.index = 5;
+
+		room_new(&room_tl, testlayout,
+			room_manager.rooms_active[4]->origin.x - 1280,
+			room_manager.rooms_active[4]->origin.y + 768, 0);
+		room_new(&room_t, testlayout,
+			room_manager.rooms_active[4]->origin.x,
+			room_manager.rooms_active[4]->origin.y + 768, 1);
+		room_new(&room_tr, testlayout,
+			room_manager.rooms_active[4]->origin.x + 1280,
+			room_manager.rooms_active[4]->origin.y + 768, 2);
+		swap = 1;
 	}
 }

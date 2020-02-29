@@ -214,6 +214,7 @@ void player_movement_overworld()
 	d.x = p.player_ent->position.x + (xdist * p.speed);
 	d.y = p.player_ent->position.y + (ydist * p.speed);
 
+	room_manager_swap(p.player_ent->position.x, p.player_ent->position.y);
 	room_manager_scroll(lastmove);
 	lastdir = p.dir;
 }
@@ -234,7 +235,7 @@ void player_free(Player *self)
 
 void player_check_col(RectCol *other)
 {
-	if (col_rect_rect(&p.player_ent->col, other) && other->solid == 1)
+	if (col_rect_rect(&p.player_ent->col, other))
 	{
 		slog("Colliding!");
 		lastmove.x = 0;
