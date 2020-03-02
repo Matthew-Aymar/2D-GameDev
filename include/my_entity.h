@@ -2,8 +2,8 @@
 #define __MY_ENTITY_H__
 
 #include "gf2d_sprite.h"
-#include "my_scene_manager.h"
 #include "my_collider.h"
+#include "my_scene.h"
 
 typedef struct Entity_S
 {
@@ -15,8 +15,8 @@ typedef struct Entity_S
 	Vector2D	position;	/*where the entity is in 2D space*/
 	void(*think)(struct Entity_S *self);	/*called when an entity draws*/
 	
-	Scene		*scene;		/*Scene this entity belongs to*/
 	RectCol		col;		/*Collider of the entity*/
+	Scene		*scene;		/*What scene this entity belongs to*/
 }Entity;
 
 /*

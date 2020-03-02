@@ -82,7 +82,10 @@ void entity_update_all()
 	int i;
 	for (i = 0; i < entity_manager.maxEnts; i++)
 	{
-		if (!entity_manager.entityList[i]._inuse)continue;
+		if (!entity_manager.entityList[i]._inuse)
+		{
+			continue;
+		}
 		entity_update(&entity_manager.entityList[i]);
 	}
 }
@@ -112,9 +115,6 @@ void entity_draw_all()
 	{
 		if (!entity_manager.entityList[i]._inuse)
 			continue;
-		if (entity_manager.entityList[i].scene == scene_active() || entity_manager.entityList[i].scene->name == "all")
-		{
-			entity_draw(&entity_manager.entityList[i]);
-		}
+		entity_draw(&entity_manager.entityList[i]);
 	}
 }

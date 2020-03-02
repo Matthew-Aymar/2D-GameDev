@@ -21,6 +21,8 @@ typedef struct
 	Sprite  *over_right;
 	Sprite  *over_idle;
 
+	CirCol battle_col;	/*Collider to be used in battle scenes*/
+
 	Room *current;
 }Player;
 
@@ -83,4 +85,12 @@ void player_free(Player *self);
 void player_set_room(Room *rm);
 
 RectCol *player_get_rect();
+
+CirCol *player_get_circle();
+
+/*
+	@brief get players last movement
+	@return x and y position
+*/
+Vector2D player_get_last();
 #endif

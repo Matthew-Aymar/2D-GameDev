@@ -40,7 +40,7 @@ typedef struct Room_Manager_S
 	Sprite *wall_forward;
 	Sprite *wall_top;
 	Sprite *grass_full;
-	int current;
+	Scene	*scene;
 }Room_Manager;
 
 static Room_Manager room_manager = { 0 };
@@ -231,14 +231,15 @@ void room_manager_close()
 	gf2d_sprite_free(room_manager.wall_top);
 	gf2d_sprite_free(room_manager.grass_full);
 	memset(&room_manager, 0, sizeof(Room_Manager));
+	slog("Closed Room Manager");
 }
 
 void room_manager_init()
 {
 	int x;
 	Vector2D pos;
-	pos.x = -1280;
-	pos.y = -768;
+	pos.x = -1320; //-1280 - an offset of 40 so the player starts centered
+	pos.y = -800;  //-768 - an offset of 32
 	room_manager.rooms_active[0] = &room_tl;
 	room_manager.rooms_active[1] = &room_t;
 	room_manager.rooms_active[2] = &room_tr;
@@ -264,12 +265,20 @@ void room_manager_init()
 
 	swap = 0;
 
+	room_manager.scene = scene_get("over");
+
+	slog("Initialized room manager");
+
 	atexit(room_manager_close);
 }
 
 void room_manager_update()
 {
 	int x;
+	if (!room_manager.scene->_active)
+	{
+		return;
+	}
 	for (x = 0; x < 9; x++)
 	{
 		room_update(room_manager.rooms_active[x]);
@@ -283,6 +292,10 @@ void room_manager_update()
 void room_manager_scroll(Vector2D movement)
 {
 	int x;
+	if (!room_manager.scene->_active)
+	{
+		return;
+	}
 	room_scroll(room_manager.rooms_active[4], movement);
 	for (x = 0; x < 9; x++)
 	{
@@ -296,6 +309,10 @@ void room_manager_swap(float xpos, float ypos)
 {
 	Vector2D pos;
 	int x;
+	if (!room_manager.scene->_active)
+	{
+		return;
+	}
 	if (xpos + 32 < room_manager.rooms_active[4]->origin.x)
 	{
 		//swap left

@@ -4,10 +4,9 @@
 #include "simple_logger.h"
 #include "my_entity.h"
 #include "my_player.h"
-#include "my_level.h"
-#include "my_collider.h"//
-#include "my_tile.h"	//
-#include "my_room.h"	//
+#include "my_room.h"
+#include "my_scene.h"
+
 int main(int argc, char * argv[])
 {
     /*variable declarations*/
@@ -40,22 +39,21 @@ int main(int argc, char * argv[])
     SDL_ShowCursor(SDL_DISABLE);
     
 	entity_manager_init(1024);
-	scene_manager_init(8);
+
+	scene_init();
 
 	currentPlayer = player_new();
 	if (currentPlayer == NULL)
 	{
 		return 0;
 	}
-	
+
 	room_manager_init();
 
     /*demo setup*/
     sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
 
-	//tile = gf2d_sprite_load_image("images/Tiles/Wall_Top.png");
-	//test = tile_new(tile, vector2d(128, 0), vector2d(64, 64));
     /*main game loop*/
     while(!done)
     {
@@ -88,16 +86,27 @@ int main(int argc, char * argv[])
 		else { D = false; }
 
 		player_check_movement(W, A, S, D);
-		entity_update_all();
+		entity_update_all(); //TODO: Make other ents not update when in a unactive scene
 
         gf2d_graphics_clear_screen();// clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
             //backgrounds drawn first
-            gf2d_sprite_draw_image(sprite,vector2d(0,0));
-			
+            //gf2d_sprite_draw_image(sprite,vector2d(0,0));	
+			scene_draw(scene_get_active());
+
+			if (scene_get_active()->_arena)
+			{
+				scene_arena_draw(scene_get_active(), player_get_last());
+			}
+
 			room_manager_update();
 
 			entity_draw_all();
+
+			if (scene_get_active()->_arena)
+			{
+				scene_rim_draw(scene_get_active());
+			}
 
             //UI elements last
             gf2d_sprite_draw(
@@ -110,6 +119,11 @@ int main(int argc, char * argv[])
                 &mouseColor,
                 (int)mf);
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
+
+		if (keys[SDL_SCANCODE_SPACE])
+		{
+			scene_swap("battle");
+		}
 
         if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());

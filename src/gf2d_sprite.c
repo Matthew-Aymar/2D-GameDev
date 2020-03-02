@@ -159,6 +159,7 @@ Sprite *gf2d_sprite_load_all(
     sprite->texture = SDL_CreateTextureFromSurface(gf2d_graphics_get_renderer(),surface);
     if (!sprite->texture)
     {
+		slog("%s", SDL_GetError());
         slog("failed to load sprite image %s",filename);
         gf2d_sprite_free(sprite);
         SDL_FreeSurface(surface);

@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "simple_logger.h"
 #include "my_entity.h"
-#include "my_scene_manager.h"
 #include "my_player.h"
+#include "my_scene.h"
 
 static Player p = { 0 };
 static int lastdir;
@@ -19,7 +19,7 @@ static char *over_idle		= "images/PlayerSprites/MaribelleIdle.png";
 Player *player_new()
 {
 	p.player_ent = entity_new();
-	p.player_ent->position = vector2d(256, 256);
+	p.player_ent->position = vector2d(568, 328);
 	if (p.player_ent == NULL)
 	{
 		slog("could not create player entity!");
@@ -40,9 +40,9 @@ Player *player_new()
 	p.player_ent->sprite = p.over_forward;
 	p.player_ent->fpl = 4;
 
-	p.player_ent->col = col_new_rect(p.player_ent->position.x, p.player_ent->position.y, 64, 64, 0);
-	
-	p.player_ent->scene = scene_by_name("all");
+	p.player_ent->col = col_new_rect(p.player_ent->position.x, p.player_ent->position.y, 64, 64, 1);
+	p.battle_col = col_new_circle(p.player_ent->position.x, p.player_ent->position.y, 32, 1);
+	p.player_ent->scene = scene_get("all");
 
 	slog("Created new player & player entity.");
 	return &p;
@@ -216,6 +216,10 @@ void player_movement_overworld()
 
 	room_manager_swap(p.player_ent->position.x, p.player_ent->position.y);
 	room_manager_scroll(lastmove);
+	if (scene_get_active()->_arena == 1)
+	{
+		scene_arena_draw(scene_get_active(), lastmove);
+	}
 	lastdir = p.dir;
 }
 
@@ -248,7 +252,21 @@ RectCol *player_get_rect()
 	return &p.player_ent->col;
 }
 
+CirCol *player_get_circle()
+{
+	return &p.battle_col;
+}
+
 void player_set_room(Room *rm)
 {
 	p.current = rm;
+}
+
+Vector2D player_get_last()
+{
+	if (p.moving == false)
+	{
+		return vector2d(0, 0);
+	}
+	return lastmove;
 }

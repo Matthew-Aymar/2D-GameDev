@@ -14,6 +14,19 @@ RectCol col_new_rect(float posx, float posy, float sizex, float sizey, Uint8 sol
 	return r;
 }
 
+CirCol col_new_circle(float posx, float posy, float rad, Uint8 solid)
+{
+	CirCol c;
+	Vector2D o;
+	o.x = posx + rad;
+	o.y = posy + rad;
+	
+	c.origin = o;
+	c.radius = rad;
+	c.solid = solid;
+	return c;
+}
+
 int col_rect_rect(RectCol *col1, RectCol *col2)
 {
 	if (col1->origin.x + col1->size.x < col2->origin.x
