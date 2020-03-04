@@ -73,6 +73,10 @@ void entity_free(Entity *self)
 void entity_update(Entity *self)
 {
 	if (!self)return;
+	if (self->fpl == 0)
+	{
+		return;
+	}
 	self->frame = self->frame + 0.1;
 	if (self->frame > self->fpl)self->frame = 0;
 }
@@ -116,5 +120,27 @@ void entity_draw_all()
 		if (!entity_manager.entityList[i]._inuse)
 			continue;
 		entity_draw(&entity_manager.entityList[i]);
+	}
+}
+
+void entity_scroll(Vector2D movement, Entity *e)
+{
+	e->position = vector2d(e->position.x - movement.x, e->position.y - movement.y);
+	e->enm.battle_col.origin.x -= movement.x;
+	e->enm.battle_col.origin.y -= movement.y;
+}
+
+void entity_check_hits(Uint8 atk, CirCol *atk_col)
+{
+	int x;
+	for (x = 0; x < entity_manager.maxEnts; x++)
+	{
+		if (entity_manager.entityList[x].isEnm == 1)
+		{
+			if (col_circle_circle(atk_col, &entity_manager.entityList[x].enm.battle_col))
+			{
+				enemy_on_hit(&entity_manager.entityList[x].enm, atk);
+			}
+		}
 	}
 }

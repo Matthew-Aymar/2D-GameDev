@@ -1,4 +1,5 @@
 #include "my_collider.h"
+#include "simple_logger.h"
 
 RectCol col_new_rect(float posx, float posy, float sizex, float sizey, Uint8 solid)
 {
@@ -40,6 +41,21 @@ int col_rect_rect(RectCol *col1, RectCol *col2)
 	{
 		return 1;
 	}
+}
+
+int col_circle_circle(CirCol *col1, CirCol *col2)
+{
+	Vector2D pos1, pos2, diff;
+	float dist;
+
+	diff = vector2d(col2->origin.x - col1->origin.x, col2->origin.y - col1->origin.y);
+	dist = SDL_sqrtf(SDL_powf(diff.x, 2) + SDL_powf(diff.y, 2));
+
+	if (dist <= col1->radius + col2->radius)
+	{
+		return 1;
+	}
+	else { return 0; }
 }
 
 void col_free_rect(RectCol *col)

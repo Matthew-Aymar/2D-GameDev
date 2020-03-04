@@ -4,6 +4,7 @@
 #include "gf2d_sprite.h"
 #include "my_collider.h"
 #include "my_scene.h"
+#include "my_enemy.h"
 
 typedef struct Entity_S
 {
@@ -17,6 +18,13 @@ typedef struct Entity_S
 	
 	RectCol		col;		/*Collider of the entity*/
 	Scene		*scene;		/*What scene this entity belongs to*/
+
+	Vector2D	forcedir;	/*Direction force should be applied*/
+	float		forcemag;	/*Amount of force to apply*/
+	float		accel;		/*Force change every update*/
+
+	Uint8		isEnm;		/*Is this entity a enemy? use for collisions*/
+	Enemy		enm;		/*Contains battle data and colliders*/
 }Entity;
 
 /*
@@ -46,5 +54,9 @@ void entity_update_all();
 	@brief draw every active entity
 */
 void entity_draw_all();
+
+void entity_scroll(Vector2D movement, Entity *e);
+
+void entity_check_hits(Uint8 atk, CirCol *atk_col);
 
 #endif

@@ -8,7 +8,8 @@ static Scene all	= { 0 }; //Just for objects that cross scenes
 
 static Sprite *arena;
 static Sprite *arena_rim;
-static Sprite *test;
+
+static Entity *temp;
 void scene_init()
 {
 	over.background = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
@@ -27,8 +28,6 @@ void scene_init()
 	arena_rim = gf2d_sprite_load_image("images/backgrounds/ArenaRim.png");
 
 	all._active = 1;
-
-	test = gf2d_sprite_load_image("images/TestPoint.png");
 }
 
 int scene_arena_update(Scene *s)
@@ -51,14 +50,10 @@ int scene_arena_update(Scene *s)
 	p3 = vector2d(s->origin.x + 600, s->origin.y + 1200);
 	p4 = vector2d(s->origin.x + 1200, s->origin.y + 600);
 
-	//TEST 1 PERFECT: p1.y + (114), p2.x + 200			(p1 - p4 edge)
-	//TEST 2 PERFECT: p3.y + 132						(p2 - p1 edge)
-	//TEST 3 PERFECT: p3.y - 268, p4.x - 332			(p3 - p2 edge)
-	//TEST 4 PERFECT: p1.x - 132, p1.y - 268, p4 + 64	(p4 - p3 edge)
-	
+	//Very much a hack section, TODO: remove hard coding
+
 	if (p0.x >= p1.x && p0.y >= p4.y - 64)
 	{
-		slog("bottom - right");
 		p1.x -= 132;
 		p1.y -= 268;
 		p4.x -= 48;
@@ -90,7 +85,6 @@ int scene_arena_update(Scene *s)
 	}
 	else if (p0.x < p1.x && p0.y >= p2.y - 64)
 	{
-		slog("bottom - left");
 		p3.y -= 168;
 		p4.x -= 232;
 		//v0 = p4 - p3
@@ -120,7 +114,6 @@ int scene_arena_update(Scene *s)
 	}
 	else if (p0.x < p1.x && p0.y < p2.y)
 	{
-		slog("top - left");
 		p3.y += 132;
 		p4.y -= 132;
 		//v0 = p3 - p2
@@ -150,7 +143,6 @@ int scene_arena_update(Scene *s)
 	}
 	else if (p0.x >= p1.x && p0.y < p4.y)
 	{
-		slog("top - right");
 		p1.y += 114;
 		p2.x += 200;
 		//v0 = p2 - p1
@@ -190,10 +182,12 @@ void scene_arena_draw(Scene *s, Vector2D movement)
 	
 	s->origin.x -= movement.x;
 	s->origin.y -= movement.y;
+	entity_scroll(movement, temp);
 	if (!scene_arena_update(s))
 	{
 		s->origin.x += movement.x;
 		s->origin.y += movement.y;
+		entity_scroll(vector2d(-movement.x, -movement.y), temp);
 	}
 
 	gf2d_sprite_draw_image(arena, s->origin);
@@ -267,6 +261,13 @@ void scene_swap(char *s)
 	}
 	else if (strcmp(s, "battle") == 0)
 	{
+		temp = entity_new();
+		temp->position = vector2d(536, 536);
+		temp->sprite = gf2d_sprite_load_image("images/dummy.png");
+		temp->fpl = 0;
+		temp->scene = scene_get("battle");
+		temp->isEnm = true;
+		enemy_new(&temp->enm);
 		over._active = 0;
 		battle._active = 1;
 	}

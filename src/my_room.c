@@ -282,10 +282,6 @@ void room_manager_update()
 	for (x = 0; x < 9; x++)
 	{
 		room_update(room_manager.rooms_active[x]);
-		if (x == 4)
-		{
-			player_check_col(&room_manager.rooms_active[x]->tiles[x].col);
-		}
 	}
 }
 

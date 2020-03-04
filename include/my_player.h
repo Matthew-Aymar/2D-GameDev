@@ -22,8 +22,17 @@ typedef struct
 	Sprite  *over_idle;
 
 	CirCol battle_col;	/*Collider to be used in battle scenes*/
-
-	Room *current;
+	Sprite *attack;		/*Basic attack of the player*/
+	Uint8 atknum;		/*Which attack in the sequence*/
+	Uint8 attacking;	/*check if the player is in a attack animation*/
+	float attackFrame;	/*Frame of the attack animation, 1-3: attack1, 4-7: attack2, 7-11: attack3*/
+	float attackcd;		/*Cooldown duration of the attack string*/
+	Vector2D atkdir;	/*Direction to mouse location*/
+	Vector2D atkpos;	/*position of the attack relative to player position*/
+	Vector3D atkrot;	/*rotation for attack sprite*/
+	
+	/*Attack hitboxes*/
+	CirCol attack_col;	/*Collider for the basic attack*/
 }Player;
 
 /*
@@ -42,50 +51,43 @@ void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D);
 
 /*
 	@brief move the player in the overworld & update thier sprite based on direction
-	@param integer representing the direction wanted
-		0 - back
-		1 - top right
-		2 - right
-		3 - bottom right
-		4 - forwards
-		5 - bottom left
-		6 - left
-		7 - top left
 	@note only moves on 4 directions
 */
 void player_movement_overworld();
 
 /*
 	@brief move the player in battle & update thier sprite based on direction
-	@param integer representing the direction wanted
-		0 - back
-		1 - top right
-		2 - right
-		3 - bottom right
-		4 - forwards
-		5 - bottom left
-		6 - left
-		7 - top left
 	@note allows for 8 directional movement
 */
-//void player_movement_battle();
+void player_movement_battle();
 
 //void player_interact();
 
-//void player_attack();
+/*
+	@brief starts or updates the attack state and frame
+*/
+void player_attack();
 
-void player_check_col(RectCol *other);
+/*
+	@brief check the actions of the player, EX: attacks and interactions
+	@param click - the keyboard state of the mouse
+	@param space - the keyboard state of the space bar
+*/
+void player_check_actions(Uint8 click, Uint8 space, float mx, float my);
 
+/*
+	@breif free the player and related data from memory
+*/
 void player_free(Player *self);
 
 /*
-	@brief set the active room/rooms the player is in
-	@param pointer to the room
+	@breif returns the player_ent's collider for overworld collisions
 */
-void player_set_room(Room *rm);
-
 RectCol *player_get_rect();
 
+/*
+	@brief returns the player's battle collider for combat collisions
+*/
 CirCol *player_get_circle();
 
 /*
@@ -93,4 +95,9 @@ CirCol *player_get_circle();
 	@return x and y position
 */
 Vector2D player_get_last();
+
+/*
+	@brief set the player's battle state TEMP
+*/
+void player_set_battle();
 #endif
