@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "gfc_types.h"
 #include "gfc_vector.h"
+#include "my_scene.h"
 
 typedef struct RectCol_S
 {
@@ -51,6 +52,8 @@ int col_circle_rect(CirCol *col1, RectCol *col2);
 	@return 1 on collision, 0 otherwise
 */
 int col_rect_rect(RectCol *col1, RectCol *col2);
+
+int col_battle_bounds(Scene *s, Vector2D point);
 
 /*
 	@brief clears the collider and its space in memory

@@ -20,7 +20,7 @@ int main(int argc, char * argv[])
     Vector4D mouseColor = {255,100,255,200};
     
 	Player *currentPlayer;
-	Uint8 W, A, S, D, click, space;
+	Uint8 W, A, S, D, click, space, num;
 
 	int fpscheck = 0;
 	float avgfps = 0;
@@ -39,7 +39,7 @@ int main(int argc, char * argv[])
     gf2d_sprite_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
     
-	entity_manager_init(1024);
+	entity_manager_init(64);
 
 	scene_init();
 
@@ -95,7 +95,26 @@ int main(int argc, char * argv[])
 			click = true;
 		}
 		else { click = false; }
-
+		if (keys[SDL_SCANCODE_1])
+		{
+			num = 1;
+		}
+		else if (keys[SDL_SCANCODE_2])
+		{
+			num = 2;
+		}
+		else if (keys[SDL_SCANCODE_3])
+		{
+			num = 3;
+		}
+		else if (keys[SDL_SCANCODE_4])
+		{
+			num = 4;
+		}
+		else
+		{
+			num = 0;
+		}
 		player_check_movement(W, A, S, D);
 		entity_update_all(); //TODO: Make other ents not update when in a unactive scene
 
@@ -114,7 +133,9 @@ int main(int argc, char * argv[])
 
 			entity_draw_all();
 
-			player_check_actions(click, space, mx, my);
+			player_draw_follower();
+
+			player_check_actions(click, space, mx, my, num);
 
 			if (scene_get_active()->_arena)
 			{

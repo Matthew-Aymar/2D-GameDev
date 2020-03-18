@@ -72,7 +72,64 @@ void entity_free(Entity *self)
 
 void entity_update(Entity *self)
 {
+	Uint8 num;
+	Vector2D normal, res;
+	float dot;
 	if (!self)return;
+
+	if (!(self->forcedir.x == 0 && self->forcedir.y == 0))
+	{
+		self->forcemag += self->accel;
+		if (self->accel >= 0.5 || self->accel <= -0.5)
+			self->accel *= 0.5;
+
+		self->position.x += (self->forcedir.x * self->forcemag);
+		self->position.y += (self->forcedir.y * self->forcemag);
+
+		if (self->isEnm)
+		{
+			self->enm.battle_col.origin.x += (self->forcedir.x * self->forcemag);
+			self->enm.battle_col.origin.y += (self->forcedir.y * self->forcemag);
+			num = col_battle_bounds(scene_get_active(), self->enm.battle_col.origin);
+			if (num)
+			{
+				if (num == 1)
+				{
+					normal = vector2d(1,-1);
+				}
+				else if (num == 2)
+				{
+					normal = vector2d(1, 1);
+				}
+				else if (num == 3)
+				{
+					normal = vector2d(-1, 1);
+				}
+				else if (num == 4)
+				{
+					normal = vector2d(-1, -1);
+				}
+				vector2d_normalize(&normal);
+				dot = (normal.x * self->forcedir.x) + (normal.y * self->forcedir.y);
+				res = vector2d(2 * dot * normal.x, 2 * dot * normal.y);
+				res = vector2d(self->forcedir.x - res.x, self->forcedir.y - res.y);
+				self->forcedir = res;
+				if (self->forcemag * 1.15 < 10)
+					self->forcemag *= 1.15;
+				self->position.x += res.x * 15;
+				self->position.y += res.y * 15;
+				self->enm.battle_col.origin.x += res.x * 15;
+				self->enm.battle_col.origin.y += res.y * 15;
+			}
+		}
+
+		if (self->forcemag <= 0.1)
+		{
+			self->accel = 0;
+			self->forcedir = vector2d(0, 0);
+		}
+	}
+
 	if (self->fpl == 0)
 	{
 		return;
@@ -130,17 +187,40 @@ void entity_scroll(Vector2D movement, Entity *e)
 	e->enm.battle_col.origin.y -= movement.y;
 }
 
-void entity_check_hits(Uint8 atk, CirCol *atk_col)
+void entity_check_hits(Attack *atk)
 {
 	int x;
 	for (x = 0; x < entity_manager.maxEnts; x++)
 	{
 		if (entity_manager.entityList[x].isEnm == 1)
 		{
-			if (col_circle_circle(atk_col, &entity_manager.entityList[x].enm.battle_col))
+			if (col_circle_circle(&atk->col, &entity_manager.entityList[x].enm.battle_col))
 			{
-				enemy_on_hit(&entity_manager.entityList[x].enm, atk);
+				enemy_on_hit(&entity_manager.entityList[x], atk);
 			}
 		}
 	}
+}
+
+Vector2D entity_get_closest(Vector2D point)
+{
+	int x;
+	float dist, temp;
+	Vector2D enm;
+	dist = INT_MAX;
+	for (x = 0; x < entity_manager.maxEnts; x++)
+	{
+		if (entity_manager.entityList[x].isEnm == 1)
+		{
+			temp = SDL_powf(entity_manager.entityList[x].position.x - point.x, 2);
+			temp += SDL_powf(entity_manager.entityList[x].position.y - point.y, 2);
+			temp = SDL_sqrtf(temp);
+			if (temp < dist)
+			{
+				dist = temp;
+				enm = entity_manager.entityList[x].position;
+			}
+		}
+	}
+	return enm;
 }

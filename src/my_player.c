@@ -19,10 +19,13 @@ static char *over_idle		= "images/PlayerSprites/MaribelleIdle.png";
 
 /*Battle Sprites*/
 static char *basic_attack = "images/PlayerSprites/basic_attack.png";
-static char *sour_test = "images/PlayerSprites/sour_test.png";
-static Sprite *sour;
-static char *sweet_test = "images/PlayerSprites/sweet_test.png";
-static Sprite *sweet;
+
+/*Followers*/
+static Follower follower1;
+static Follower follower2;
+static Follower follower3;
+static Follower follower4;
+
 Player *player_new()
 {
 	p.player_ent = entity_new();
@@ -50,16 +53,60 @@ Player *player_new()
 	p.player_ent->col = col_new_rect(p.player_ent->position.x, p.player_ent->position.y, 64, 64, 1);
 	p.battle_col = col_new_circle(p.player_ent->position.x, p.player_ent->position.y, 32, 1);
 	
+	//TODO Switch to config file
+	p.atk[0].sprite = gf2d_sprite_load_all(basic_attack, 192, 192, 10);
+	p.atk[0].index = 0;
+	p.atk[0].frame = 0;
+	p.atk[0].start = 0;
+	p.atk[0].end = 3;
+	p.atk[0].active_s = 1;
+	p.atk[0].active_e = 2;
+	p.atk[0].col = col_new_circle(0, 0, 16, 0);
+	p.atk[0].knockback = vector2d(-1, -1);
+	p.atk[0].force = 3;
+
+	p.atk[1].sprite = gf2d_sprite_load_all(basic_attack, 192, 192, 10);
+	p.atk[1].index = 1;
+	p.atk[1].frame = 0;
+	p.atk[1].start = 3;
+	p.atk[1].end = 6;
+	p.atk[1].active_s = 4;
+	p.atk[1].active_e = 5;
+	p.atk[1].col = col_new_circle(0, 0, 16, 0);
+	p.atk[1].knockback = vector2d(-1, -1);
+	p.atk[1].force = 3;
+
+	p.atk[2].sprite = gf2d_sprite_load_all(basic_attack, 192, 192, 10);
+	p.atk[2].index = 2;
+	p.atk[2].frame = 0;
+	p.atk[2].start = 6;
+	p.atk[2].end = 10;
+	p.atk[2].active_s = 7;
+	p.atk[2].active_e = 9;
+	p.atk[2].col = col_new_circle(0, 0, 16, 0);
+	p.atk[2].knockback = vector2d(1, 1);
+	p.atk[2].force = 25;
+
+	follower_new(&follower1, 0);
+	follower_new(&follower2, 1);
+	follower_new(&follower3, 2);
+	follower_new(&follower4, 3);
+
+	follower1.pos = p.player_ent->position;
+	follower2.pos = p.player_ent->position;
+	follower3.pos = p.player_ent->position;
+	follower4.pos = p.player_ent->position;
+
+	p.active = &follower1;
+
 	p.attack = gf2d_sprite_load_all(basic_attack, 192, 192, 10);
-	p.atknum = 0;
+
+	p.atknum = -1;
 	p.attacking = false;
-	p.attackFrame = 0;
-	p.attack_col = col_new_circle(0, 0, 32, 0);
 
 	p.player_ent->scene = scene_get("all");
 
-	sour = gf2d_sprite_load_image(sour_test);
-	sweet = gf2d_sprite_load_image(sweet_test);
+	p.trackdir = vector2d(0, 1);
 
 	slog("Created new player & player entity.");
 	return &p;
@@ -83,6 +130,12 @@ void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D)
 		p.moving = false;
 		p.player_ent->sprite = p.over_idle;
 		p.player_ent->frame = lastdir / 2;
+
+		if (p.battle)
+		{
+			follower_update(&p, p.active);
+		}
+
 		return;
 	}
 
@@ -136,6 +189,11 @@ void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D)
 			}
 		}
 
+		if (p.battle)
+		{
+			follower_update(&p, p.active);
+		}
+
 		player_movement_battle();
 	}
 	else
@@ -173,9 +231,8 @@ void player_movement_battle()
 {
 	float xdist = 0;
 	float ydist = 0;
-	Vector2D d;
 
-	if (p.moving = false)
+	if (p.moving == false)
 		return;
 
 	if (p.dir != lastdir || p.player_ent->sprite == p.over_idle)
@@ -239,18 +296,13 @@ void player_movement_battle()
 		ydist = 1;
 	}
 
-	lastmove.x = xdist * p.speed;
-	lastmove.y = ydist * p.speed;
+	p.trackdir = vector2d(-1 * xdist, -1 * ydist);
 
-	d.x = p.player_ent->position.x + (xdist * p.speed);
-	d.y = p.player_ent->position.y + (ydist * p.speed);
+	lastmove.x = xdist * (p.speed);
+	lastmove.y = ydist * (p.speed);
 
-	room_manager_swap(p.player_ent->position.x, p.player_ent->position.y);
-	room_manager_scroll(lastmove);
-	if (scene_get_active()->_arena == 1)
-	{
-		scene_arena_draw(scene_get_active(), lastmove);
-	}
+	follower_scroll(p.active, lastmove);
+
 	lastdir = p.dir;
 }
 
@@ -258,9 +310,8 @@ void player_movement_overworld()
 {
 	float xdist = 0;
 	float ydist = 0;
-	Vector2D d;
 
-	if (p.moving = false)
+	if (p.moving == false)
 		return;
 
 	if (p.dir != lastdir || p.player_ent->sprite == p.over_idle)
@@ -307,19 +358,17 @@ void player_movement_overworld()
 	lastmove.x = xdist * p.speed;
 	lastmove.y = ydist * p.speed;
 
-	d.x = p.player_ent->position.x + (xdist * p.speed);
-	d.y = p.player_ent->position.y + (ydist * p.speed);
-
 	room_manager_swap(p.player_ent->position.x, p.player_ent->position.y);
 	room_manager_scroll(lastmove);
 	if (scene_get_active()->_arena == 1)
 	{
 		scene_arena_draw(scene_get_active(), lastmove);
 	}
+
 	lastdir = p.dir;
 }
 
-void player_check_actions(Uint8 click, Uint8 space, float mx, float my)
+void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 num)
 {
 	Vector2D ori, scale, offset, pos;
 	scale = vector2d(4, 4);
@@ -357,77 +406,77 @@ void player_check_actions(Uint8 click, Uint8 space, float mx, float my)
 				p.attacking = true;
 				p.atknum++;
 
-				ori = vector2d(p.battle_col.origin.x, p.battle_col.origin.y);
-				p.atkdir = vector2d(mx - ori.x, my - ori.y);
-				vector2d_normalize(&p.atkdir);
+				p.atk[p.atknum].frame = p.atk[p.atknum].start;
 
-				p.atkpos = vector2d(ori.x + (p.atkdir.x * 25)-4, ori.y + (p.atkdir.y * 25)-4);
-				p.atkrot = vector3d(96, 96, vector2d_angle(p.atkdir) + 90);
+				ori = vector2d(p.battle_col.origin.x, p.battle_col.origin.y);
+				p.atk[p.atknum].direction = vector2d(mx - ori.x, my - ori.y);
+				vector2d_normalize(&p.atk[p.atknum].direction);
+
+				p.atk[p.atknum].position = vector2d(ori.x + (p.atk[p.atknum].direction.x * 25) - 4,
+													ori.y + (p.atk[p.atknum].direction.y * 25) - 4);
+				p.atk[p.atknum].rotation = vector3d(96, 96, vector2d_angle(p.atk[p.atknum].direction) + 90);
+
+				p.atk[p.atknum].reset = true;
 			}
 		}
 		else if (p.battle)
 		{
-			if (p.atknum == 3)
+			if (p.atknum == 2)
 			{
-				p.attackFrame += 0.15;
+				p.atk[p.atknum].frame += 0.15;
 			}
 			else
 			{
-				p.attackFrame += 0.1;
+				p.atk[p.atknum].frame += 0.1;
 			}
 
-			if (p.atknum == 1)
+			if (p.atknum == 0)
 			{
-				if (p.attackFrame >= 3)
+				if (p.atk[p.atknum].frame >= p.atk[p.atknum].end)
 				{
 					p.attacking = false;
 					return;
 				}
 			}
-			else if (p.atknum == 2)
+			else if (p.atknum == 1)
 			{
-				if (p.attackFrame >= 6)
+				if (p.atk[p.atknum].frame >= p.atk[p.atknum].end)
 				{
 					p.attacking = false;
 					return;
 				}
 			}
-			
-			pos = vector2d(p.atkpos.x - 96, p.atkpos.y - 96);
-			gf2d_sprite_draw(p.attack, pos, NULL, NULL, &p.atkrot, NULL, NULL, p.attackFrame);
 
-			gf2d_sprite_draw_image(sweet, p.atkpos);
+			pos = vector2d(p.atk[p.atknum].position.x - 96, p.atk[p.atknum].position.y - 96);
+			gf2d_sprite_draw(p.atk[p.atknum].sprite, pos, NULL, NULL, &p.atk[p.atknum].rotation, NULL, NULL, p.atk[p.atknum].frame);
 
 			//TEST
-			if (p.attackFrame >= 1 && p.attackFrame < 2)
+			if (p.atk[p.atknum].frame >= p.atk[p.atknum].active_s && p.atk[p.atknum].frame < p.atk[p.atknum].active_e)
 			{
-				p.attack_col.origin.x = p.atkpos.x + (p.atkdir.x * 25);
-				p.attack_col.origin.y = p.atkpos.y + (p.atkdir.y * 25);
-				entity_check_hits(p.atknum, &p.attack_col);
-				gf2d_sprite_draw_image(sour, vector2d(p.atkpos.x + (p.atkdir.x * 25) - 32, p.atkpos.y + (p.atkdir.y * 25) - 32));
+				p.atk[p.atknum].col.origin.x = p.atk[p.atknum].position.x + (p.atk[p.atknum].direction.x * 25);
+				p.atk[p.atknum].col.origin.y = p.atk[p.atknum].position.y + (p.atk[p.atknum].direction.y * 25);
+				entity_check_hits(&p.atk[p.atknum]);
 			}
 
-			if (p.attackFrame >= 3 && p.attackFrame < 4)
+			if (p.atk[p.atknum].frame >= p.atk[p.atknum].active_s && p.atk[p.atknum].frame < p.atk[p.atknum].active_e)
 			{
-				p.attack_col.origin.x = p.atkpos.x + (p.atkdir.x * 25);
-				p.attack_col.origin.y = p.atkpos.y + (p.atkdir.y * 25);
-				entity_check_hits(p.atknum, &p.attack_col);
-				gf2d_sprite_draw_image(sour, vector2d(p.atkpos.x + (p.atkdir.x * 25) - 32, p.atkpos.y + (p.atkdir.y * 25) - 32));
+				p.atk[p.atknum].col.origin.x = p.atk[p.atknum].position.x + (p.atk[p.atknum].direction.x * 25);
+				p.atk[p.atknum].col.origin.y = p.atk[p.atknum].position.y + (p.atk[p.atknum].direction.y * 25);
+				entity_check_hits(&p.atk[p.atknum]);
 			}
 
-			if (p.attackFrame >= 6 && p.attackFrame < 8)
+			if (p.atk[p.atknum].frame >= p.atk[p.atknum].active_s && p.atk[p.atknum].frame < p.atk[p.atknum].active_e)
 			{
-				p.attack_col.origin.x = p.atkpos.x + (p.atkdir.x * 25);
-				p.attack_col.origin.y = p.atkpos.y + (p.atkdir.y * 25);
-				entity_check_hits(p.atknum, &p.attack_col);
-				gf2d_sprite_draw_image(sour, vector2d(p.atkpos.x + (p.atkdir.x * 25) - 32, p.atkpos.y + (p.atkdir.y * 25) - 32));
+				p.atk[p.atknum].col.origin.x = p.atk[p.atknum].position.x + (p.atk[p.atknum].direction.x * 25);
+				p.atk[p.atknum].col.origin.y = p.atk[p.atknum].position.y + (p.atk[p.atknum].direction.y * 25);
+				entity_check_hits(&p.atk[p.atknum]);
 			}
 
-			if (p.atknum == 3 && p.attackFrame >= 10)
+			if (p.atknum == 2 && p.atk[p.atknum].frame >= p.atk[p.atknum].end)
 			{
 				p.attacking = false;
-				p.atknum = 0;
-				p.attackFrame = 0;
+				p.atknum = -1;
+				p.atk[p.atknum].frame = 0;
 				p.attackcd = 3;
 			}
 		}
@@ -435,6 +484,20 @@ void player_check_actions(Uint8 click, Uint8 space, float mx, float my)
 	else
 	{
 		p.attackcd -= 0.1;
+	}
+
+	if (p.attacking)
+	{
+		p.speed = 1;
+	}
+	else
+	{
+		p.speed = 3;
+	}
+
+	if (num)
+	{
+		player_swap_follower(num);
 	}
 }
 
@@ -474,4 +537,32 @@ Vector2D player_get_last()
 void player_set_battle()
 {
 	p.battle = !p.battle;
+}
+
+void player_draw_follower()
+{
+	follower_draw(p.active);
+}
+
+void player_swap_follower(Uint8 slot)
+{
+	if (slot == 1)
+	{
+		p.active = &follower1;
+	}
+	else if (slot == 2)
+	{
+		p.active = &follower2;
+	}
+	else if (slot == 3)
+	{
+		p.active = &follower3;
+	}
+	else if (slot == 4)
+	{
+		p.active = &follower4;
+	}
+
+	p.active->pos = p.player_ent->position;
+	p.active->shot_out = false;
 }

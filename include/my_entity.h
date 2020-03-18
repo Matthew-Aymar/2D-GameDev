@@ -5,6 +5,8 @@
 #include "my_collider.h"
 #include "my_scene.h"
 #include "my_enemy.h"
+#include "my_attack.h"
+#include "my_follower.h"
 
 typedef struct Entity_S
 {
@@ -23,7 +25,7 @@ typedef struct Entity_S
 	float		forcemag;	/*Amount of force to apply*/
 	float		accel;		/*Force change every update*/
 
-	Uint8		isEnm;		/*Is this entity a enemy? use for collisions*/
+	Uint8		isEnm;		/*Check if this entity should be treated as a enemy*/
 	Enemy		enm;		/*Contains battle data and colliders*/
 }Entity;
 
@@ -55,8 +57,22 @@ void entity_update_all();
 */
 void entity_draw_all();
 
+/*
+	@move the entity relative to the player position to create a scrolling effect
+	@param movement - the direction the player moved this update
+	@param e - the entity to move
+*/
 void entity_scroll(Vector2D movement, Entity *e);
 
-void entity_check_hits(Uint8 atk, CirCol *atk_col);
+/*
+	@check all enemy entities to see if the player's attack collided
+	@param atk - the attack structure to check
+*/
+void entity_check_hits(Attack *atk);
+
+/*
+	@brief get the closest entity to param point
+*/
+Vector2D entity_get_closest(Vector2D point);
 
 #endif

@@ -2,10 +2,11 @@
 #define __MY_ENEMY_H__
 
 #include "my_collider.h"
+#include "my_attack.h"
 
 typedef struct Enemy_S
 {
-	Uint8 lastatk;		/*Last attack hit by the player used to avoid getting hit twice by the same hitbox*/
+	int lastatk;		/*Last attack hit by the player used to avoid getting hit twice by the same hitbox*/
 	CirCol battle_col;	/*Collider to be used in a battle scene*/
 	float hitstun;		/*Duration of hitstun*/
 }Enemy;
@@ -18,8 +19,9 @@ void enemy_new(Enemy *e);
 
 /*
 	@brief allocates knockback and damage dealt when they collide with a player's attack
-	@param the index of the attack colliding with
+	@param ent - the entity of the enemy
+	@param atk - the data of the attack colliding with
 */
-void enemy_on_hit(Enemy *e, Uint8 atk);
+void enemy_on_hit(void *ent, Attack *atk);
 
 #endif

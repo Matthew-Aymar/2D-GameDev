@@ -5,6 +5,8 @@
 #include "my_entity.h"
 #include "my_collider.h"
 #include "my_room.h"
+#include "my_attack.h"
+#include "my_follower.h"
 
 typedef struct
 {
@@ -25,14 +27,12 @@ typedef struct
 	Sprite *attack;		/*Basic attack of the player*/
 	Uint8 atknum;		/*Which attack in the sequence*/
 	Uint8 attacking;	/*check if the player is in a attack animation*/
-	float attackFrame;	/*Frame of the attack animation, 1-3: attack1, 4-7: attack2, 7-11: attack3*/
 	float attackcd;		/*Cooldown duration of the attack string*/
-	Vector2D atkdir;	/*Direction to mouse location*/
-	Vector2D atkpos;	/*position of the attack relative to player position*/
-	Vector3D atkrot;	/*rotation for attack sprite*/
-	
-	/*Attack hitboxes*/
-	CirCol attack_col;	/*Collider for the basic attack*/
+
+	Attack atk[3];		/*Collection of player attacks*/
+
+	Follower *active;	/*Current follower on the field*/
+	Vector2D trackdir;	/*opposite direction for the follower to trail behind*/
 }Player;
 
 /*
@@ -72,8 +72,9 @@ void player_attack();
 	@brief check the actions of the player, EX: attacks and interactions
 	@param click - the keyboard state of the mouse
 	@param space - the keyboard state of the space bar
+	@param num - if a key 1-4 is being pressed to swap followers
 */
-void player_check_actions(Uint8 click, Uint8 space, float mx, float my);
+void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 num);
 
 /*
 	@breif free the player and related data from memory
@@ -100,4 +101,15 @@ Vector2D player_get_last();
 	@brief set the player's battle state TEMP
 */
 void player_set_battle();
+
+/*
+	@brief draws the player's active follower
+*/
+void player_draw_follower();
+
+/*
+	@brief swaps the active follower in the scene
+	@param slot - which follower slot to switch to
+*/
+void player_swap_follower(Uint8 slot);
 #endif
