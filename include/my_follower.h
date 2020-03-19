@@ -68,6 +68,14 @@ void follower_check_attack(Follower *f);
 */
 void follower_update_attack(Follower *f);
 
+/*
+	@breif scrolls the followers based on player movement
+*/
 void follower_scroll(Follower *f, Vector2D movement);
+
+/*
+	@brief fires a laser after a short delay from the followers position through the mouse position
+*/
+void follower_laser(Follower *f, Vector2D mousepos);
 
 #endif

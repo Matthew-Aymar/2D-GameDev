@@ -6,6 +6,7 @@
 #include "my_player.h"
 #include "my_room.h"
 #include "my_scene.h"
+#include "my_follower.h"
 
 int main(int argc, char * argv[])
 {
@@ -20,7 +21,7 @@ int main(int argc, char * argv[])
     Vector4D mouseColor = {255,100,255,200};
     
 	Player *currentPlayer;
-	Uint8 W, A, S, D, click, space, num;
+	Uint8 W, A, S, D, left_click, right_click, space, num;
 
 	int fpscheck = 0;
 	float avgfps = 0;
@@ -92,9 +93,13 @@ int main(int argc, char * argv[])
 		else { space = false; }
 		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
 		{
-			click = true;
+			left_click = true;
 		}
-		else { click = false; }
+		else { left_click = false; }
+		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT))
+		{
+			right_click = true;
+		}
 		if (keys[SDL_SCANCODE_1])
 		{
 			num = 1;
@@ -135,7 +140,7 @@ int main(int argc, char * argv[])
 
 			player_draw_follower();
 
-			player_check_actions(click, space, mx, my, num);
+			player_check_actions(left_click, right_click, space, mx, my, num);
 
 			if (scene_get_active()->_arena)
 			{

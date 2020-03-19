@@ -368,7 +368,7 @@ void player_movement_overworld()
 	lastdir = p.dir;
 }
 
-void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 num)
+void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num)
 {
 	Vector2D ori, scale, offset, pos;
 	scale = vector2d(4, 4);
@@ -401,7 +401,7 @@ void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 nu
 	{
 		if (!p.attacking && p.battle)
 		{
-			if (click)
+			if (left_click)
 			{
 				p.attacking = true;
 				p.atknum++;
@@ -493,6 +493,11 @@ void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 nu
 	else
 	{
 		p.speed = 3;
+	}
+
+	if (right_click)
+	{
+
 	}
 
 	if (num)
