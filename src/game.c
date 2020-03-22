@@ -140,7 +140,7 @@ int main(int argc, char * argv[])
 
 			player_draw_follower();
 
-			player_check_actions(left_click, right_click, space, mx, my, num);
+			player_check_actions(left_click, space, mx, my, num);
 
 			if (scene_get_active()->_arena)
 			{

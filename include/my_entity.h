@@ -68,7 +68,7 @@ void entity_scroll(Vector2D movement, Entity *e);
 	@check all enemy entities to see if the player's attack collided
 	@param atk - the attack structure to check
 */
-void entity_check_hits(Attack *atk);
+int entity_check_hits(Attack *atk);
 
 /*
 	@brief get the closest entity to param point

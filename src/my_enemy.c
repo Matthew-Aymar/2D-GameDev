@@ -23,6 +23,9 @@ void enemy_on_hit(void *ent, Attack *atk)
 		return;
 	}
 	entity->enm.lastatk = atk->index;
+
+	slog("%f, %f : %f, %f", atk->knockback.x, atk->knockback.y, atk->direction.x, atk->direction.y);
+
 	entity->forcedir.x = atk->knockback.x * atk->direction.x;
 	entity->forcedir.y = atk->knockback.y * atk->direction.y;
 	vector2d_normalize(&entity->forcedir);
