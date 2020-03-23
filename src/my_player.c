@@ -97,7 +97,7 @@ Player *player_new()
 	follower3.pos = p.player_ent->position;
 	follower4.pos = p.player_ent->position;
 
-	p.active = &follower1;
+	//p.active = &follower1;
 
 	p.attack = gf2d_sprite_load_all(basic_attack, 192, 192, 10);
 
@@ -107,6 +107,11 @@ Player *player_new()
 	p.player_ent->scene = scene_get("all");
 
 	p.trackdir = vector2d(0, 1);
+
+	p.team[0] = &follower1;
+	p.team[1] = &follower2;
+	p.team[2] = &follower3;
+	p.team[3] = &follower4;
 
 	slog("Created new player & player entity.");
 	return &p;
@@ -133,7 +138,7 @@ void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D)
 
 		if (p.battle)
 		{
-			follower_update(&p, p.active);
+			follower_update(&p, p.team[0]);
 		}
 
 		return;
@@ -191,7 +196,7 @@ void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D)
 
 		if (p.battle)
 		{
-			follower_update(&p, p.active);
+			follower_update(&p, p.team[0]);
 		}
 
 		player_movement_battle();
@@ -301,7 +306,7 @@ void player_movement_battle()
 	lastmove.x = xdist * (p.speed);
 	lastmove.y = ydist * (p.speed);
 
-	follower_scroll(p.active, lastmove);
+	follower_scroll(p.team[0], lastmove);
 
 	lastdir = p.dir;
 }
@@ -368,7 +373,7 @@ void player_movement_overworld()
 	lastdir = p.dir;
 }
 
-void player_check_actions(Uint8 left_click, Uint8 space, float mx, float my, Uint8 num)
+void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num)
 {
 	Vector2D ori, scale, offset, pos;
 	scale = vector2d(4, 4);
@@ -401,7 +406,7 @@ void player_check_actions(Uint8 left_click, Uint8 space, float mx, float my, Uin
 	{
 		if (!p.attacking && p.battle)
 		{
-			if (left_click)
+			if (left_click && p.can_atk)
 			{
 				p.attacking = true;
 				p.atknum++;
@@ -495,9 +500,70 @@ void player_check_actions(Uint8 left_click, Uint8 space, float mx, float my, Uin
 		p.speed = 3;
 	}
 
+	//w == x; h == y; x == z; y == w
+	if (mx > p.window.z &&
+		mx < p.window.x + p.window.z &&
+		my > p.window.w &&
+		my < p.window.w + p.window.y)
+	{
+		if (my < p.window.w + 48)
+		{
+			p.selected = 1;
+		}
+		else if (my < p.window.w + 96)
+		{
+			p.selected = 2;
+		}
+		else if (my < p.window.w + 144)
+		{
+			p.selected = 3;
+		}
+		else if (my < p.window.w + 192)
+		{
+			p.selected = 4;
+		}
+
+		if (right_click)
+		{
+			p.show_status = true;
+		}
+		else
+		{
+			p.show_status = false;
+		}
+
+		p.can_atk = false;
+	}
+	else
+	{
+		p.selected = 0;
+		p.picked = 0;
+		p.follower_cd = 0;
+
+		p.show_status = false;
+
+		p.can_atk = true;
+	}
+
+	if (left_click && p.selected)
+	{
+		if (p.picked && p.follower_cd <= 0)
+		{
+			player_swap_follower(p.picked, p.selected);
+			p.picked = 0;
+			p.follower_cd = 1;
+		}
+		else
+		{
+			p.picked = p.selected;
+		}
+	}
+
+	p.follower_cd -= 0.1;
+
 	if (num)
 	{
-		player_swap_follower(num);
+		p.team[0]->mode = num - 1;
 	}
 }
 
@@ -541,28 +607,19 @@ void player_set_battle()
 
 void player_draw_follower()
 {
-	follower_draw(p.active);
+	follower_draw(p.team[0]);
 }
 
-void player_swap_follower(Uint8 slot)
+void player_swap_follower(Uint8 slot1, Uint8 slot2)
 {
-	if (slot == 1)
-	{
-		p.active = &follower1;
-	}
-	else if (slot == 2)
-	{
-		p.active = &follower2;
-	}
-	else if (slot == 3)
-	{
-		p.active = &follower3;
-	}
-	else if (slot == 4)
-	{
-		p.active = &follower4;
-	}
+	Follower *swap;
 
-	p.active->pos = p.player_ent->position;
-	p.active->shot_out = false;
+	slog("%d, %d", slot1, slot2);
+
+	swap = p.team[slot1 - 1];
+	p.team[slot1 - 1] = p.team[slot2-1];
+	p.team[slot2-1] = swap;
+
+	p.team[0]->pos = p.player_ent->position;
+	p.team[0]->shot_out = false;
 }

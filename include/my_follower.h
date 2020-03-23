@@ -37,6 +37,8 @@ typedef struct Follower_S
 	Attack ranged;		/*basic ranged attacks when in defense mode*/
 	Uint8 shot_out;		/*Whether the follower has fired its attack already*/
 	Vector2D target;	/*The position of the nearest enemy*/
+
+	char *name;		/*name of this follower type*/
 }Follower;
 
 /*

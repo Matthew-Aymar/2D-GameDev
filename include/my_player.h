@@ -28,11 +28,18 @@ typedef struct
 	Uint8 atknum;		/*Which attack in the sequence*/
 	Uint8 attacking;	/*check if the player is in a attack animation*/
 	float attackcd;		/*Cooldown duration of the attack string*/
+	Uint8 can_atk;
 
 	Attack atk[3];		/*Collection of player attacks*/
 
-	Follower *active;	/*Current follower on the field*/
+	float follower_cd;	/*Cooldown for the player to swap*/
+	Follower *team[4];	/*Collection of pointers to the player's followers*/
 	Vector2D trackdir;	/*opposite direction for the follower to trail behind*/
+	Uint8 selected;		/*which slot on the UI is selected, -1 in none*/
+	Uint8 picked;		/*Which slot was clicked on*/
+	Vector4D window;	/*the position of the team window to check for edits*/
+
+	Uint8 show_status;  /*Whether to display the status screen on the UI*/
 }Player;
 
 /*
@@ -74,7 +81,7 @@ void player_attack();
 	@param space - the keyboard state of the space bar
 	@param num - if a key 1-4 is being pressed to swap followers
 */
-void player_check_actions(Uint8 click, Uint8 space, float mx, float my, Uint8 num);
+void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num);
 
 /*
 	@breif free the player and related data from memory
@@ -109,7 +116,8 @@ void player_draw_follower();
 
 /*
 	@brief swaps the active follower in the scene
-	@param slot - which follower slot to switch to
+	@param slot1 - which follower slot to switch
+	@param slot2 - which follower slot to switch to
 */
-void player_swap_follower(Uint8 slot);
+void player_swap_follower(Uint8 slot1, Uint8 slot2);
 #endif

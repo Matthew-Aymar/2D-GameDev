@@ -277,7 +277,7 @@ void gf2d_windows_update_all()
     }
 }
 
-Window *gf2f_window_load_from_json(SJson *json)
+Window *gf2d_window_load_from_json(SJson *json)
 {
     Window *win = NULL;
     int i,count;
@@ -317,6 +317,16 @@ Window *gf2f_window_load_from_json(SJson *json)
         gf2d_window_add_element(win,gf2d_element_load_from_config(value));
     }
     return win;
+}
+
+Window *gf2d_window_load(char *filename)
+{
+	Window *win = NULL;
+	SJson *json;
+	json = sj_load(filename);
+	win = gf2d_window_load_from_json(json);
+	sj_free(json);
+	return win;
 }
 
 /*eol@eof*/

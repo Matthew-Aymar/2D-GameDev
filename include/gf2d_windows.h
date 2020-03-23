@@ -112,6 +112,6 @@ void gf2d_draw_window_border_generic(Rect rect,Vector4D color);
  * @param json the json file containing a window config
  * @return NULL on error or the new window otherwise
  */
-Window *gf2f_window_load_from_json(SJson *json);
+Window *gf2d_window_load_from_json(SJson *json);
 
 #endif
