@@ -11,6 +11,7 @@ typedef struct Room_S
 	int maxtiles;		/*Maximum tiles in the room/array*/
 	Vector2D origin;	/*Starting position of the room*/
 	int index;			/*position in the room manager*/
+	//Interactable i[5];		/*Interactable object in this room*/
 }Room;
 
 /*
@@ -66,5 +67,7 @@ void room_manager_close();
 	@brief checks if the player has entered a different room to allow for collisions
 */
 void room_manager_swap(float xpos, float ypos);
+
+int room_check_col(RectCol *col);
 
 #endif

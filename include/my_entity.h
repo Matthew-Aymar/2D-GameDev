@@ -71,6 +71,11 @@ void entity_scroll(Vector2D movement, Entity *e);
 int entity_check_hits(Attack *atk);
 
 /*
+	@brief check all entity of type enemy to check for collision
+*/
+int entity_check_col(CirCol *col, Item *item);
+
+/*
 	@brief get the closest entity to param point
 */
 Vector2D entity_get_closest(Vector2D point);

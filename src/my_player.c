@@ -28,6 +28,7 @@ static Follower follower4;
 
 Player *player_new()
 {
+	int x;
 	p.player_ent = entity_new();
 	p.player_ent->position = vector2d(568, 328);
 	if (p.player_ent == NULL)
@@ -50,7 +51,7 @@ Player *player_new()
 	p.player_ent->sprite = p.over_forward;
 	p.player_ent->fpl = 4;
 
-	p.player_ent->col = col_new_rect(p.player_ent->position.x, p.player_ent->position.y, 64, 64, 1);
+	p.player_ent->col = col_new_rect(p.player_ent->position.x+3, p.player_ent->position.y+3, 58, 58, 1);
 	p.battle_col = col_new_circle(p.player_ent->position.x, p.player_ent->position.y, 32, 1);
 	
 	//TODO Switch to config file
@@ -90,7 +91,7 @@ Player *player_new()
 	follower_new(&follower1, 0);
 	follower_new(&follower2, 1);
 	follower_new(&follower3, 2);
-	follower_new(&follower4, 3);
+	//follower_new(&follower4, 3);
 
 	follower1.pos = p.player_ent->position;
 	follower2.pos = p.player_ent->position;
@@ -112,6 +113,16 @@ Player *player_new()
 	p.team[1] = &follower2;
 	p.team[2] = &follower3;
 	p.team[3] = &follower4;
+	p.team[0]->health -= 3;
+
+	for (x = 0; x < 5; x++)
+	{
+		item_new(&p.items[x], x);
+	}
+	p.item_1 = 0;
+	p.item_2 = 4;
+
+	p.grounded = true;
 
 	slog("Created new player & player entity.");
 	return &p;
@@ -119,6 +130,12 @@ Player *player_new()
 
 void player_check_movement(Uint8 W, Uint8 A, Uint8 S, Uint8 D)
 {
+	if (!p.grounded)
+	{
+		p.moving = false;
+		return;
+	}
+
 	//Quick escape checks
 	if (W && S)
 	{
@@ -373,10 +390,11 @@ void player_movement_overworld()
 	lastdir = p.dir;
 }
 
-void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num)
+void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num, Uint8 tab, Uint8 q, Uint8 e)
 {
 	Vector2D ori, scale, offset, pos;
 	scale = vector2d(4, 4);
+
 	if (space)
 	{
 		if (TEMPSWAPCD >= 5)
@@ -395,6 +413,12 @@ void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, floa
 		else
 		{
 			TEMPSWAPCD += 0.1;
+		}
+
+		if (p.can_interact)
+		{
+			p.interact->on_interact(&p);
+			player_can_interact(false, NULL);
 		}
 	}
 	else
@@ -561,9 +585,49 @@ void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, floa
 
 	p.follower_cd -= 0.1;
 
-	if (num)
+	if (num && p.battle)
 	{
 		p.team[0]->mode = num - 1;
+	}
+
+	if (p.item_swapcd <= 0 && tab)
+	{
+		if (p.item_1 < 3)
+		{
+			p.item_1++;
+		}
+		else
+		{
+			p.item_1 = 0;
+		}
+		p.item_swapcd = 2;
+	}
+	else
+	{
+		p.item_swapcd -= 0.1;
+	}
+
+	if (q && !p.item_out)
+	{
+		p.item_out = p.item_1 + 1;
+		p.items[p.item_1].use(&p);
+	}
+
+	if (e && !p.item_out)
+	{
+		p.item_out = p.item_2 + 1;
+		p.items[p.item_2].use(&p);
+	}
+
+	p.mouse = vector2d(mx, my);
+
+	if (p.item_out)
+	{
+		p.items[p.item_out - 1].update(&p.items[p.item_out-1], &p);
+		if (p.moving)
+		{
+			item_scroll(&p.items[p.item_out - 1], lastmove);
+		}
 	}
 }
 
@@ -614,12 +678,93 @@ void player_swap_follower(Uint8 slot1, Uint8 slot2)
 {
 	Follower *swap;
 
-	slog("%d, %d", slot1, slot2);
-
 	swap = p.team[slot1 - 1];
 	p.team[slot1 - 1] = p.team[slot2-1];
 	p.team[slot2-1] = swap;
 
 	p.team[0]->pos = p.player_ent->position;
 	p.team[0]->shot_out = false;
+}
+
+void player_can_interact(Uint8 b, Interactable *i)
+{
+	p.can_interact = b;
+	p.interact = i;
+}
+
+void player_shuffle_followers()
+{
+	follower_free(&follower1);
+	srand(time(0) * 1);
+	follower_new(&follower1, rand() % 6);
+	follower_free(&follower2);
+	srand(time(0) * 2);
+	follower_new(&follower2, rand() % 6);
+	follower_free(&follower3);
+	srand(time(0) * 3);
+	follower_new(&follower3, rand() % 6);
+	follower_free(&follower4);
+	srand(time(0) * 4);
+	follower_new(&follower4, rand() % 6);
+}
+
+void player_clear_interact()
+{
+	interactable_clear(p.interact);
+	p.can_interact = false;
+}
+
+Vector2D player_get_interact_pos()
+{
+	return interactable_get_pos(p.interact);
+}
+
+void player_follower_new()
+{
+	int x = 0;
+	float r;
+	for (x = 0; x < 4; x++)
+	{
+		if (!p.team[x]->set)
+		{
+			srand((unsigned)time(0) % 1000 * p.player_ent->position.x * p.player_ent->position.y);
+			r = rand();
+			r /= RAND_MAX;
+			r *= 100;
+			if (r < 16.67)
+			{
+				follower_new(p.team[x], 0);
+			}
+			else if (r < 33.34)
+			{
+				follower_new(p.team[x], 1);
+			}
+			else if (r < 50.01)
+			{
+				follower_new(p.team[x], 2);
+			}
+			else if (r < 66.68)
+			{
+				follower_new(p.team[x], 3);
+			}
+			else if (r < 83.85)
+			{
+				follower_new(p.team[x], 4);
+			}
+			else if (r < 100)
+			{
+				follower_new(p.team[x], 5);
+			}
+			return;
+		}
+	}
+}
+
+void player_restock()
+{
+	int x = 0;
+	for (x = 0; x < 5; x++)
+	{
+		p.items[x].count = 3;
+	}
 }

@@ -46,11 +46,13 @@ typedef struct Room_Manager_S
 static Room_Manager room_manager = { 0 };
 
 static int swap;
+static int init = false;
 
 void *room_new(Room *rm, int l[240], float xpos, float ypos, int index)
 {
 	int x;
 	Vector2D pos;
+	float offx, offy;
 	rm->origin = vector2d(xpos, ypos);
 	for (x = 0; x < room_tiles; x++)
 	{
@@ -85,7 +87,7 @@ void room_update(Room *rm)
 
 void room_scroll(Room *rm, Vector2D movement)
 {
-	int x, y;
+	int x, y, z;
 	Vector2D previous;
 	float offx, offy;
 	Vector2D pos;
@@ -126,7 +128,7 @@ void room_scroll(Room *rm, Vector2D movement)
 				previous.y = rm->tiles[x].col.origin.y;
 				rm->tiles[x].col.origin.x -= (movement.x);
 				rm->tiles[x].col.origin.y -= (movement.y);
-				//If it collides with the professor
+				//If it collides with the player
 				if (col_rect_rect(player_get_rect(), &rm->tiles[x].col) || rm->index == swap)
 				{
 					//Revert all changes and return
@@ -148,6 +150,12 @@ void room_scroll(Room *rm, Vector2D movement)
 							rm->tiles[y].origin.x += (movement.x);
 							rm->tiles[y].origin.y += (movement.y);
 						}
+					}
+					//check for the tiles interactable
+					if (rm->tiles[x].interactable)
+					{
+						interactable_get_tile(&rm->tiles[x].inter, &rm->tiles[x]);
+						player_can_interact(rm->tiles[x].inter.id, &rm->tiles[x].inter);
 					}
 					return;
 				}
@@ -217,6 +225,7 @@ void room_free(Room *rm)
 	{
 		tile_free(&rm->tiles[x]);
 	}
+	//interactable_free(&rm->i);
 	memset(rm, 0, sizeof(Room));
 }
 
@@ -270,6 +279,8 @@ void room_manager_init()
 	slog("Initialized room manager");
 
 	atexit(room_manager_close);
+
+	init = true;
 }
 
 void room_manager_update()
@@ -437,4 +448,20 @@ void room_manager_swap(float xpos, float ypos)
 			room_manager.rooms_active[4]->origin.y + 768, 2);
 		swap = 1;
 	}
+}
+
+int room_check_col(RectCol *col)
+{
+	int x;
+	for (x = 0; x < room_tiles; x++)
+	{
+		if (room_manager.rooms_active[4]->tiles[x].col.solid == 1)
+		{
+			if (col_rect_rect(col, &room_manager.rooms_active[4]->tiles[x].col))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }

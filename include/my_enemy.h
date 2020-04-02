@@ -3,6 +3,7 @@
 
 #include "my_collider.h"
 #include "my_attack.h"
+#include "my_item.h"
 
 typedef struct Enemy_S
 {
@@ -23,5 +24,7 @@ void enemy_new(Enemy *e);
 	@param atk - the data of the attack colliding with
 */
 void enemy_on_hit(void *ent, Attack *atk);
+
+void enemy_on_col(void *ent, Item *item);
 
 #endif

@@ -7,6 +7,7 @@
 #include "my_room.h"
 #include "my_attack.h"
 #include "my_follower.h"
+#include "my_item.h"
 
 typedef struct
 {
@@ -40,6 +41,19 @@ typedef struct
 	Vector4D window;	/*the position of the team window to check for edits*/
 
 	Uint8 show_status;  /*Whether to display the status screen on the UI*/
+
+	Item items[5];		/*Collection of items the player has*/
+	Uint8 item_1;		/*Id of which item is in slot #1 (Q)*/
+	Uint8 item_2;		/*Id of which item is in slot #2 (E)*/
+	Uint8 item_out;		/*If the item is active*/
+	float item_swapcd;	/*to allow for item switching when pressing tab*/
+
+	Vector2D mouse;		/*Mouse positions for tracking*/
+
+	Interactable *interact;
+	Uint8 can_interact;
+
+	Uint8 grounded;		/*User cannot act if not grounded*/
 }Player;
 
 /*
@@ -81,7 +95,7 @@ void player_attack();
 	@param space - the keyboard state of the space bar
 	@param num - if a key 1-4 is being pressed to swap followers
 */
-void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num);
+void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, float mx, float my, Uint8 num, Uint8 tab, Uint8 q, Uint8 e);
 
 /*
 	@breif free the player and related data from memory
@@ -120,4 +134,34 @@ void player_draw_follower();
 	@param slot2 - which follower slot to switch to
 */
 void player_swap_follower(Uint8 slot1, Uint8 slot2);
+
+/*
+	@brief toggles the player to be able to interact with a particular object
+	@param b the state of the boolean
+	@param i the object to interact with
+*/
+void player_can_interact(Uint8 b, Interactable *i);
+
+/*
+	@brief frees and generates new followers for the players
+*/
+void player_shuffle_followers();
+
+/*
+	@brief sets item_out to zero
+*/
+void player_item_out();
+
+int player_follower_col(CirCol *other);
+
+void player_heal_current();
+
+void player_clear_interact();
+
+Vector2D player_get_interact_pos();
+
+void player_follower_new();
+
+void player_restock();
+
 #endif

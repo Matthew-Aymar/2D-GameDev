@@ -37,7 +37,7 @@ CirCol col_new_circle(float posx, float posy, float radius, Uint8 solid);
 	@param pointers to the two colliders to check
 	@return 1 on collision, 0 otherwise
 */
-int col_circle_cirle(CirCol *col1, CirCol *col2);
+int col_circle_circle(CirCol *col1, CirCol *col2);
 
 /*
 	@brief circle-on-rect collision

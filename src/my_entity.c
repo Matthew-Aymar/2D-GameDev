@@ -153,6 +153,10 @@ void entity_update_all()
 
 void entity_draw(Entity *self)
 {
+	if (self->scene != scene_get_active() && self->scene != scene_get("all"))
+	{
+		return;
+	}
 	if (self == NULL)
 	{
 		slog("cannot draw sprite, NULL entity provided!");
@@ -185,6 +189,8 @@ void entity_scroll(Vector2D movement, Entity *e)
 	e->position = vector2d(e->position.x - movement.x, e->position.y - movement.y);
 	e->enm.battle_col.origin.x -= movement.x;
 	e->enm.battle_col.origin.y -= movement.y;
+	e->col.origin.x -= movement.x;
+	e->col.origin.y -= movement.y;
 }
 
 int entity_check_hits(Attack *atk)
@@ -197,6 +203,23 @@ int entity_check_hits(Attack *atk)
 			if (col_circle_circle(&atk->col, &entity_manager.entityList[x].enm.battle_col))
 			{
 				enemy_on_hit(&entity_manager.entityList[x], atk);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+int entity_check_col(CirCol *col, Item *item)
+{
+	int x;
+	for (x = 0; x < entity_manager.maxEnts; x++)
+	{
+		if (entity_manager.entityList[x].isEnm == 1)
+		{
+			if (col_circle_circle(col, &entity_manager.entityList[x].enm.battle_col))
+			{
+				enemy_on_col(&entity_manager.entityList[x], item);
 				return 1;
 			}
 		}

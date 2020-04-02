@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
     Vector4D mouseColor = {255,100,255,200};
     
 	Player *currentPlayer;
-	Uint8 W, A, S, D, left_click, right_click, space, num;
+	Uint8 W, A, S, D, left_click, right_click, space, num, tab, q, e;
 
 	int fpscheck = 0;
 	float avgfps = 0;
@@ -33,17 +33,17 @@ int main(int argc, char * argv[])
 	Window *item;
 	Window *loop;
 	Window *status;
-	char *stat1;
-	char *stat2;
-	char *stat3;
-	char *stat4;
-	char *stat5;
+	char stat1[32];
+	char stat2[32];
+	char stat3[32];
+	char stat4[32];
+	char stat5[32];
 	char *stat_name1;
 	char *stat_name2;
 	char *stat_name3;
 	char *stat_name4;
 	char *stat_name5;
-	char stat_temp[16] = "";
+	char stat_temp[64];
     /*program initializtion*/
     init_logger("gf2d.log");
     slog("---==== BEGIN ====---");
@@ -138,6 +138,21 @@ int main(int argc, char * argv[])
 			right_click = true;
 		}
 		else { right_click = false; }
+		if (keys[SDL_SCANCODE_TAB])
+		{
+			tab = true;
+		}
+		else { tab = false; }
+		if (keys[SDL_SCANCODE_Q])
+		{
+			q = true;
+		}
+		else { q = false; }
+		if (keys[SDL_SCANCODE_E])
+		{
+			e = true;
+		}
+		else { e = false; }
 		if (keys[SDL_SCANCODE_1])
 		{
 			num = 1;
@@ -180,7 +195,7 @@ int main(int argc, char * argv[])
 
 			player_draw_follower();
 
-			player_check_actions(left_click, right_click, space, mx, my, num);
+			player_check_actions(left_click, right_click, space, mx, my, num, tab, q, e);
 
 			if (currentPlayer->show_status)
 			{
@@ -198,19 +213,17 @@ int main(int argc, char * argv[])
 
             //UI elements last
 			gf2d_windows_draw_all();
-
 			if (currentPlayer->show_status)
 			{
 				gf2d_text_draw_line(currentPlayer->team[currentPlayer->selected - 1]->name, FT_H1, gfc_color(255, 255, 255, 255), vector2d(status->dimensions.x + 10, status->dimensions.y + 5));
-				
 				memset(stat_temp, 0, sizeof stat_temp);
-				sprintf(stat1, "%d", currentPlayer->team[currentPlayer->selected - 1]->health);
+				sprintf(stat1, "%d/%d", currentPlayer->team[currentPlayer->selected - 1]->health, currentPlayer->team[currentPlayer->selected - 1]->health_max);
 				stat_name1 = "Health: ";
 				strcat(stat_temp, stat_name1);
 				strcat(stat_temp, stat1);
 				
 				gf2d_text_draw_line(stat_temp, FT_H1, gfc_color(255, 255, 255, 255), vector2d(status->dimensions.x + 10, status->dimensions.y + 105));
-
+				
 				memset(stat_temp, 0, sizeof stat_temp);
 				sprintf(stat2, "%d", currentPlayer->team[currentPlayer->selected - 1]->attack);
 				stat_name2 = "Attack: ";
@@ -218,7 +231,7 @@ int main(int argc, char * argv[])
 				strcat(stat_temp, stat2);
 
 				gf2d_text_draw_line(stat_temp, FT_H1, gfc_color(255, 255, 255, 255), vector2d(status->dimensions.x + 10, status->dimensions.y + 155));
-
+				
 				memset(stat_temp, 0, sizeof stat_temp);
 				sprintf(stat3, "%d", currentPlayer->team[currentPlayer->selected - 1]->magic);
 				stat_name3 = "Magic: ";
@@ -226,7 +239,7 @@ int main(int argc, char * argv[])
 				strcat(stat_temp, stat3);
 
 				gf2d_text_draw_line(stat_temp, FT_H1, gfc_color(255, 255, 255, 255), vector2d(status->dimensions.x + 10, status->dimensions.y + 205));
-
+				
 				memset(stat_temp, 0, sizeof stat_temp);
 				sprintf(stat4, "%d", currentPlayer->team[currentPlayer->selected - 1]->defense);
 				stat_name4 = "Defense: ";
@@ -234,7 +247,7 @@ int main(int argc, char * argv[])
 				strcat(stat_temp, stat4);
 
 				gf2d_text_draw_line(stat_temp, FT_H1, gfc_color(255, 255, 255, 255), vector2d(status->dimensions.x + 10, status->dimensions.y + 255));
-
+				
 				memset(stat_temp, 0, sizeof stat_temp);
 				sprintf(stat5, "%d", currentPlayer->team[currentPlayer->selected - 1]->speed);
 				stat_name5 = "Speed: ";
@@ -245,7 +258,9 @@ int main(int argc, char * argv[])
 			}
 
 			gf2d_sprite_draw_image(item->background, vector2d(item->dimensions.x, item->dimensions.y));
+			gf2d_sprite_draw_image(currentPlayer->items[currentPlayer->item_1].icon, vector2d(item->dimensions.x, item->dimensions.y));
 			gf2d_sprite_draw_image(loop->background, vector2d(loop->dimensions.x, loop->dimensions.y));
+			gf2d_sprite_draw_image(currentPlayer->items[currentPlayer->item_2].icon, vector2d(loop->dimensions.x, loop->dimensions.y));
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 48));
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 96));
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 144));

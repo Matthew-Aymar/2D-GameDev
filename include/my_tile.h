@@ -3,6 +3,7 @@
 
 #include "gf2d_sprite.h"
 #include "my_collider.h"
+#include "my_interactable.h"
 
 typedef struct Tile_S
 {
@@ -10,6 +11,8 @@ typedef struct Tile_S
 	RectCol col;		/*Collider of the tile*/
 	Vector2D origin;	/*X, Y position in 2D space*/
 	Vector2D size;		/*X, Y size of the tile & collider*/
+	Interactable inter;	/*The interactable occupying this tile*/
+	Uint8 interactable;	/*Whether this tile contains a interactable*/
 }Tile;
 
 /*

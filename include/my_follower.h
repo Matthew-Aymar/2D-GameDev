@@ -19,6 +19,7 @@ typedef struct Follower_S
 	float forcemag;
 	float accel;
 
+	int health_max;	/*Max HP of the follower*/
 	int health;	    /*current hp of the follower*/
 	int speed;	    /*movement speed of the follower*/
 	int attack;		/*Amount of damage done by follower attacks*/
@@ -39,6 +40,7 @@ typedef struct Follower_S
 	Vector2D target;	/*The position of the nearest enemy*/
 
 	char *name;		/*name of this follower type*/
+	Uint8 set;		/*Whether this follower has been initialized*/
 }Follower;
 
 /*
@@ -79,5 +81,7 @@ void follower_scroll(Follower *f, Vector2D movement);
 	@brief fires a laser after a short delay from the followers position through the mouse position
 */
 void follower_laser(Follower *f, Vector2D mousepos);
+
+void follower_free(Follower *f);
 
 #endif
