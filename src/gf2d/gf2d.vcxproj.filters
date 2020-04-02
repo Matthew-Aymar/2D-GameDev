@@ -227,9 +227,6 @@
     <ClCompile Include="..\my_enemy.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="my_follower.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\gf2d_windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -266,10 +263,13 @@
     <ClCompile Include="..\gfc_color.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="my_interactable.c">
+    <ClCompile Include="..\my_follower.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="my_item.c">
+    <ClCompile Include="..\my_interactable.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\my_item.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

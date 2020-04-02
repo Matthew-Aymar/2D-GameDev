@@ -167,13 +167,13 @@
     <ClCompile Include="..\my_collider.c" />
     <ClCompile Include="..\my_enemy.c" />
     <ClCompile Include="..\my_entity.c" />
+    <ClCompile Include="..\my_follower.c" />
+    <ClCompile Include="..\my_interactable.c" />
+    <ClCompile Include="..\my_item.c" />
     <ClCompile Include="..\my_player.c" />
     <ClCompile Include="..\my_room.c" />
     <ClCompile Include="..\my_scene.c" />
     <ClCompile Include="..\my_tile.c" />
-    <ClCompile Include="my_follower.c" />
-    <ClCompile Include="my_interactable.c" />
-    <ClCompile Include="my_item.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
