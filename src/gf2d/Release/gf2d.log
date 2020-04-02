@@ -1,0 +1,62 @@
+﻿Build started 4/1/2020 10:07:39 PM.
+     1>Project "D:\Git\gameframework2d\src\gf2d\gf2d.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(357,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W1 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TC /wd4996 /analyze- /errorReport:prompt ..\..\gfc\simple_json\src\simple_json.c ..\..\gfc\simple_json\src\simple_json_parse.c
+         simple_json.c
+         simple_json_parse.c
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\..\gf2d.exe" /INCREMENTAL:NO /NOLOGO SDL2_image.lib SDL2_mixer.lib SDL2_ttf.lib SDL2.lib SDL2main.lib SDL2test.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\..\gf2d.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\..\gf2d.lib" /MACHINE:X86 /SAFESEH Release\simple_json.obj
+         Release\simple_json_array.obj
+         Release\simple_json_error.obj
+         Release\simple_json_list.obj
+         Release\simple_json_object.obj
+         Release\simple_json_parse.obj
+         Release\simple_json_string.obj
+         Release\simple_logger.obj
+         Release\gfc_audio.obj
+         Release\gfc_callbacks.obj
+         Release\gfc_input.obj
+         Release\gfc_list.obj
+         Release\gfc_matrix.obj
+         Release\gfc_types.obj
+         Release\gfc_vector.obj
+         Release\game.obj
+         Release\gf2d_actor.obj
+         Release\gf2d_config.obj
+         Release\gf2d_draw.obj
+         Release\gf2d_elements.obj
+         Release\gf2d_element_actor.obj
+         Release\gf2d_element_button.obj
+         Release\gf2d_element_label.obj
+         Release\gf2d_element_list.obj
+         Release\gf2d_graphics.obj
+         Release\gf2d_mouse.obj
+         Release\gf2d_shape.obj
+         Release\gf2d_sprite.obj
+         Release\gf2d_text.obj
+         Release\gf2d_windows.obj
+         Release\gfc_color.obj
+         Release\my_collider.obj
+         Release\my_enemy.obj
+         Release\my_entity.obj
+         Release\my_player.obj
+         Release\my_room.obj
+         Release\my_scene.obj
+         Release\my_tile.obj
+         Release\my_follower.obj
+         Release\my_interactable.obj
+         Release\my_item.obj
+         Generating code
+     1>d:\git\gameframework2d\src\my_scene.c(120): warning C4715: 'scene_get' : not all control paths return a value
+     1>d:\git\gameframework2d\src\my_scene.c(104): warning C4715: 'scene_get_active' : not all control paths return a value
+     1>d:\git\gameframework2d\src\my_room.c(167): warning C4700: uninitialized local variable 'y' used
+     1>d:\git\gameframework2d\src\my_collider.c(193): warning C4715: 'col_battle_bounds' : not all control paths return a value
+     1>d:\git\gameframework2d\src\my_room.c(78): warning C4716: 'room_new' : must return a value
+         Finished generating code
+         gf2d.vcxproj -> D:\Git\gameframework2d\src\gf2d\..\..\gf2d.exe
+     1>Done Building Project "D:\Git\gameframework2d\src\gf2d\gf2d.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.08
