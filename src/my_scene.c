@@ -143,7 +143,7 @@ void scene_swap(char *s)
 			battle._active = 1;
 			return;
 		}
-
+		
 		temp = entity_new();
 		temp->position = vector2d(576, 576);
 		temp->fpl = 0;

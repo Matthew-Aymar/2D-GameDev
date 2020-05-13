@@ -10,6 +10,7 @@
 #include "my_follower.h"
 #include "my_enemy.h"
 #include "my_editor.h"
+#include "gfc_audio.h"
 
 int main(int argc, char * argv[])
 {
@@ -44,7 +45,7 @@ int main(int argc, char * argv[])
 	Vector2D ngorigin, ngbounds;
 	Uint8 nghover;
 
-	char *ct = "Continue";
+	char *ct = "Editor";
 	Vector2D ctorigin, ctbounds;
 	Uint8 cthover;
 
@@ -60,6 +61,9 @@ int main(int argc, char * argv[])
 
 	Sprite *plahp;
 	Vector2D plahporigin;
+
+	Sound *bgtrack;
+
     /*program initializtion*/
     init_logger("gf2d.log");
     slog("---==== BEGIN ====---");
@@ -92,6 +96,8 @@ int main(int argc, char * argv[])
 	}
 
 	room_manager_init();
+
+	gfc_audio_init(16, 4, 0, 8, 0, 0);
 
     /*demo setup*/
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16);
@@ -132,6 +138,9 @@ int main(int argc, char * argv[])
 	plahp = gf2d_sprite_load_all("images/battle_playerbar.png", 244, 20, 16);
 	plahporigin.x = 4;
 	plahporigin.y = 720 - 4 - 20;
+
+	bgtrack = gfc_sound_load("sounds/Zone.wav", 0.05, -1);
+	gfc_sound_play(bgtrack, 100, 0.05, -1, -1);
     /*main game loop*/
 	while (!done)
 	{
@@ -344,6 +353,7 @@ int main(int argc, char * argv[])
 			num = 0;
 		}
 		player_check_movement(W, A, S, D);
+
 		entity_update_all(); //TODO: Make other ents not update when in a unactive scene
 
 		gf2d_windows_update_all();
@@ -379,7 +389,7 @@ int main(int argc, char * argv[])
 			{
 				scene_rim_draw(scene_get_active());
 			}
-
+			
             //UI elements last
 			gf2d_windows_draw_all();
 			if (currentPlayer->show_status)
@@ -425,7 +435,6 @@ int main(int argc, char * argv[])
 
 				gf2d_text_draw_line(stat_temp, FT_H1, gfc_color(1, 1, 1, 1), vector2d(status->dimensions.x + 10, status->dimensions.y + 305));
 			}
-
 			gf2d_sprite_draw_image(item->background, vector2d(item->dimensions.x, item->dimensions.y));
 			gf2d_sprite_draw_image(currentPlayer->items[currentPlayer->item_1].icon, vector2d(item->dimensions.x, item->dimensions.y));
 			gf2d_sprite_draw_image(loop->background, vector2d(loop->dimensions.x, loop->dimensions.y));
@@ -433,8 +442,7 @@ int main(int argc, char * argv[])
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 48));
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 96));
 			gf2d_sprite_draw_image(div, vector2d(team->dimensions.x, team->dimensions.y + 144));
-
-			if (currentPlayer->battle)
+			if (currentPlayer->battle && currentPlayer->next_boss)
 			{
 				gf2d_sprite_draw(
 					enmhp,
@@ -444,9 +452,20 @@ int main(int argc, char * argv[])
 					NULL,
 					NULL,
 					NULL,
-					((currentPlayer->enemy_health_max - currentPlayer->enemy_health) * 25) / currentPlayer->enemy_health_max);
+					((currentPlayer->enemy_health_max - currentPlayer->enemy_health) * 25)/currentPlayer->enemy_health_max);
 			}
-
+			else if (currentPlayer->battle)
+			{
+				gf2d_sprite_draw(
+					enmhp,
+					enmhporigin,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					NULL,
+					currentPlayer->enemy_health_max - currentPlayer->enemy_health);
+			}
 				gf2d_sprite_draw(
 					folhp,
 					folhporigin,
@@ -486,7 +505,7 @@ int main(int argc, char * argv[])
                 &mouseColor,
                 (int)mf);
         gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
-
+		
 		if (keys[SDL_SCANCODE_ESCAPE])
 		{
 			menu = 1;
@@ -503,7 +522,7 @@ int main(int argc, char * argv[])
 			avgfps += gf2d_graphics_get_frames_per_second();
 			fpscheck++;
 		}
-
+		
 		if (currentPlayer->health <= 0)
 		{
 			player_free(currentPlayer);
@@ -512,6 +531,7 @@ int main(int argc, char * argv[])
 			entity_manager_close();
 			menu = true;
 		}
+
     }
 	player_free(currentPlayer);
 	

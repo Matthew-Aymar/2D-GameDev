@@ -3,6 +3,7 @@
 #include "my_entity.h"
 #include "my_player.h"
 #include "my_scene.h"
+#include "gfc_audio.h"
 
 static Player p = { 0 };
 static int lastdir;
@@ -490,7 +491,6 @@ void player_check_actions(Uint8 left_click, Uint8 right_click, Uint8 space, floa
 			pos = vector2d(p.atk[p.atknum].position.x - 96, p.atk[p.atknum].position.y - 96);
 			gf2d_sprite_draw(p.atk[p.atknum].sprite, pos, NULL, NULL, &p.atk[p.atknum].rotation, NULL, NULL, p.atk[p.atknum].frame);
 
-			//TEST
 			if (p.atk[p.atknum].frame >= p.atk[p.atknum].active_s && p.atk[p.atknum].frame < p.atk[p.atknum].active_e)
 			{
 				p.atk[p.atknum].col.origin.x = p.atk[p.atknum].position.x + (p.atk[p.atknum].direction.x * 25);
@@ -793,10 +793,17 @@ void player_follower_damage(int amount)
 	p.team[0]->health -= amount;
 	if (p.team[0]->health <= 0)
 	{
-		player_swap_follower(1, 2);
-		player_swap_follower(2, 3);
-		player_swap_follower(3, 4);
-		follower_free(p.team[3]);
+		if (p.team[1]->health > 0 || p.team[2]->health > 0 || p.team[3]->health > 0)
+		{
+			player_swap_follower(1, 2);
+			player_swap_follower(2, 3);
+			player_swap_follower(3, 4);
+			follower_free(p.team[3]);
+		}
+		else
+		{
+			player_damage(p.health_max);
+		}
 	}
 }
 

@@ -76,6 +76,7 @@ void entity_update(Entity *self)
 	Uint8 num;
 	Vector2D normal, res;
 	float dot, r;
+
 	if (!self)return;
 
 	if (self->isEnm && self->enm.hitstun <= 0)
@@ -104,7 +105,7 @@ void entity_update(Entity *self)
 			enemy_check_attack(self);
 			enemy_update_attack(self);
 			player_set_enemy_health(self->enm.health, self->enm.health_max);
-
+			
 			if (self->enm.hitstun > 0)
 			{
 				self->forcemag += self->accel;

@@ -50,7 +50,7 @@ void enemy_new(Enemy *e)
 		return;
 	}
 
-	e->battle_col = col_new_circle(536, 536, 32, 0);
+	e->battle_col = col_new_circle(600, 600, 32, 0);
 
 	e->ranged.damage = 1;
 
