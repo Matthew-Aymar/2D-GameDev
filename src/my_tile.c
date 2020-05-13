@@ -1,7 +1,7 @@
 #include "my_tile.h"
 #include "simple_logger.h"
 
-Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid)
+Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid, Uint8 init)
 {
 	Tile t;
 	float chance, item;
@@ -16,7 +16,7 @@ Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid)
 	}
 	t.origin = pos;
 	t.size = size;
-	if (!solid)
+	if (!solid && !init)
 	{
 		srand((unsigned)((time(0)%1000) * pos.x * pos.y));
 		chance = rand();

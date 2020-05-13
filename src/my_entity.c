@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "simple_logger.h"
 #include "my_entity.h"
+#include "my_player.h"
 
 typedef struct
 {
@@ -74,53 +75,176 @@ void entity_update(Entity *self)
 {
 	Uint8 num;
 	Vector2D normal, res;
-	float dot;
+	float dot, r;
 	if (!self)return;
 
-	if (!(self->forcedir.x == 0 && self->forcedir.y == 0))
+	if (self->isEnm && self->enm.hitstun <= 0)
 	{
-		self->forcemag += self->accel;
-		if (self->accel >= 0.5 || self->accel <= -0.5)
-			self->accel *= 0.5;
+		self->enm.target = player_position();
+		self->enm.track[0] = vector2d(self->enm.target.x, self->enm.target.y - 150);
+		self->enm.track[1] = vector2d(self->enm.target.x + 150, self->enm.target.y);
+		self->enm.track[2] = vector2d(self->enm.target.x, self->enm.target.y + 150);
+		self->enm.track[3] = vector2d(self->enm.target.x - 150, self->enm.target.y);
+		if (self->enm.state == 1)
+		{
+			self->forcedir = vector2d(self->enm.track[self->enm.tracking].x - self->position.x, self->enm.track[self->enm.tracking].y - self->position.y);
 
-		self->position.x += (self->forcedir.x * self->forcemag);
-		self->position.y += (self->forcedir.y * self->forcemag);
+		}
+		else
+			self->forcedir = vector2d(self->enm.target.x - self->position.x, self->enm.target.y - self->position.y);
 
+		vector2d_normalize(&self->forcedir);
+		self->forcemag = self->enm.speed;
+	}
+
+	if (self->isEnm || !(self->forcedir.x == 0 && self->forcedir.y == 0))
+	{
 		if (self->isEnm)
 		{
-			self->enm.battle_col.origin.x += (self->forcedir.x * self->forcemag);
-			self->enm.battle_col.origin.y += (self->forcedir.y * self->forcemag);
-			num = col_battle_bounds(scene_get_active(), self->enm.battle_col.origin);
-			if (num)
+			enemy_check_attack(self);
+			enemy_update_attack(self);
+			player_set_enemy_health(self->enm.health, self->enm.health_max);
+
+			if (self->enm.hitstun > 0)
 			{
-				if (num == 1)
+				self->forcemag += self->accel;
+				if (self->accel >= 0.5 || self->accel <= -0.5)
+					self->accel *= 0.5;
+
+				self->position.x += (self->forcedir.x * self->forcemag);
+				self->position.y += (self->forcedir.y * self->forcemag);
+
+				self->enm.battle_col.origin.x += (self->forcedir.x * self->forcemag);
+				self->enm.battle_col.origin.y += (self->forcedir.y * self->forcemag);
+				num = col_battle_bounds(scene_get_active(), self->enm.battle_col.origin);
+				if (num)
 				{
-					normal = vector2d(1,-1);
+					if (num == 1)
+					{
+						normal = vector2d(1, -1);
+					}
+					else if (num == 2)
+					{
+						normal = vector2d(1, 1);
+					}
+					else if (num == 3)
+					{
+						normal = vector2d(-1, 1);
+					}
+					else if (num == 4)
+					{
+						normal = vector2d(-1, -1);
+					}
+					vector2d_normalize(&normal);
+					dot = (normal.x * self->forcedir.x) + (normal.y * self->forcedir.y);
+					res = vector2d(2 * dot * normal.x, 2 * dot * normal.y);
+					res = vector2d(self->forcedir.x - res.x, self->forcedir.y - res.y);
+					self->forcedir = res;
+					if (self->forcemag * 1.15 < 10)
+						self->forcemag *= 1.15;
+					self->position.x += res.x * 15;
+					self->position.y += res.y * 15;
+					self->enm.battle_col.origin.x += res.x * 15;
+					self->enm.battle_col.origin.y += res.y * 15;
 				}
-				else if (num == 2)
-				{
-					normal = vector2d(1, 1);
-				}
-				else if (num == 3)
-				{
-					normal = vector2d(-1, 1);
-				}
-				else if (num == 4)
-				{
-					normal = vector2d(-1, -1);
-				}
-				vector2d_normalize(&normal);
-				dot = (normal.x * self->forcedir.x) + (normal.y * self->forcedir.y);
-				res = vector2d(2 * dot * normal.x, 2 * dot * normal.y);
-				res = vector2d(self->forcedir.x - res.x, self->forcedir.y - res.y);
-				self->forcedir = res;
-				if (self->forcemag * 1.15 < 10)
-					self->forcemag *= 1.15;
-				self->position.x += res.x * 15;
-				self->position.y += res.y * 15;
-				self->enm.battle_col.origin.x += res.x * 15;
-				self->enm.battle_col.origin.y += res.y * 15;
+				self->enm.hitstun -= 0.1;
 			}
+			else
+			{
+				if (self->enm.state == 0)
+				{
+					self->position.x += (self->forcedir.x * self->forcemag);
+					self->position.y += (self->forcedir.y * self->forcemag);
+
+					self->enm.battle_col.origin.x += (self->forcedir.x * self->forcemag);
+					self->enm.battle_col.origin.y += (self->forcedir.y * self->forcemag);
+
+					srand((unsigned)time(0) % 1000 * self->position.x * self->position.y * self->enm.tracking * self->enm.lastr);
+					r = rand();
+					r /= RAND_MAX;
+					r *= 100;
+					if (r < 1)
+					{
+						self->enm.state = !self->enm.state;
+					}
+					self->enm.lastr = r;
+				}
+				else
+				{
+					srand((unsigned)time(0) % 1000 * self->position.x * self->position.y * self->enm.tracking * self->enm.lastr);
+					r = rand();
+					r /= RAND_MAX;
+					r *= 100;
+					if (r < 0.3)
+					{
+						self->enm.tracking++;
+						if (self->enm.tracking > 3)
+						{
+							self->enm.tracking = 0;
+						}
+					}
+					else if (r < 0.6)
+					{
+						self->enm.tracking--;
+						if (self->enm.tracking < 0)
+						{
+							self->enm.tracking = 3;
+						}
+					}
+					else if (r < 0.7)
+					{
+						self->enm.state = !self->enm.state;
+					}
+					self->enm.lastr = r;
+
+					self->position.x += (self->forcedir.x * self->forcemag);
+					self->position.y += (self->forcedir.y * self->forcemag);
+
+					self->enm.battle_col.origin.x += (self->forcedir.x * self->forcemag);
+					self->enm.battle_col.origin.y += (self->forcedir.y * self->forcemag);
+					num = col_battle_bounds(scene_get_active(), self->enm.battle_col.origin);
+					if (num)
+					{
+						if (num == 1)
+						{
+							if (self->enm.tracking == 0)
+								self->enm.tracking = 3;
+							else if (self->enm.tracking == 1)
+								self->enm.tracking = 2;
+						}
+						else if (num == 2)
+						{
+							if (self->enm.tracking == 0)
+								self->enm.tracking = 1;
+							else if (self->enm.tracking == 3)
+								self->enm.tracking = 2;
+						}
+						else if (num == 3)
+						{
+							if (self->enm.tracking == 2)
+								self->enm.tracking = 1;
+							else if (self->enm.tracking == 3)
+								self->enm.tracking = 0;
+						}
+						else if (num == 4)
+						{
+							if (self->enm.tracking == 2)
+								self->enm.tracking = 3;
+							else if (self->enm.tracking == 1)
+								self->enm.tracking = 0;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			self->forcemag += self->accel;
+			if (self->accel >= 0.5 || self->accel <= -0.5)
+				self->accel *= 0.5;
+
+			self->position.x += (self->forcedir.x * self->forcemag);
+			self->position.y += (self->forcedir.y * self->forcemag);
 		}
 
 		if (self->forcemag <= 0.1)
@@ -162,15 +286,43 @@ void entity_draw(Entity *self)
 		slog("cannot draw sprite, NULL entity provided!");
 		return;
 	}
-	gf2d_sprite_draw(
-		self->sprite,
-		self->position,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		(Uint32)self->frame);
+	if (self->isEnm)
+	{
+		gf2d_sprite_draw(
+			self->enm.sprite,
+			vector2d(self->position.x + 24, self->position.y + 24),
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			(Uint32)self->frame);
+	}
+	else
+	{
+		gf2d_sprite_draw(
+			self->sprite,
+			self->position,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			(Uint32)self->frame);
+	}
+
+	if (self->isEnm && self->enm.shot_out)
+	{
+		gf2d_sprite_draw(
+			self->enm.ranged.sprite,
+			self->enm.ranged.position,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			(Uint32)self->frame);
+	}
 }
 
 void entity_draw_all()
@@ -191,11 +343,19 @@ void entity_scroll(Vector2D movement, Entity *e)
 	e->enm.battle_col.origin.y -= movement.y;
 	e->col.origin.x -= movement.x;
 	e->col.origin.y -= movement.y;
+
+	if (e->isEnm && e->enm.shot_out)
+	{
+		e->enm.ranged.position = vector2d(e->enm.ranged.position.x - movement.x, e->enm.ranged.position.y - movement.y);
+		e->enm.ranged.col.origin.x -= movement.x;
+		e->enm.ranged.col.origin.y -= movement.y;
+	}
 }
 
 int entity_check_hits(Attack *atk)
 {
 	int x;
+
 	for (x = 0; x < entity_manager.maxEnts; x++)
 	{
 		if (entity_manager.entityList[x].isEnm == 1)
@@ -219,7 +379,23 @@ int entity_check_col(CirCol *col, Item *item)
 		{
 			if (col_circle_circle(col, &entity_manager.entityList[x].enm.battle_col))
 			{
-				enemy_on_col(&entity_manager.entityList[x], item);
+				if (item->id == 4)
+				{
+					if (entity_manager.entityList[x].enm.id == 6)
+					{
+						player_item_out();
+						return 1;
+					}
+
+					player_follower_new(entity_manager.entityList[x].enm.id);
+					player_set_battle();
+					player_item_out();
+					scene_swap("over");
+				}
+				else
+				{
+					enemy_on_col(&entity_manager.entityList[x], item);
+				}
 				return 1;
 			}
 		}

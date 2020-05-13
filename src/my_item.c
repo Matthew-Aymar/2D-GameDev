@@ -93,9 +93,9 @@ void item_use_potion(void *p)
 		}
 		else
 		{
-			if (player->team[0]->health < player->team[0]->health_max)
+			if (player->health < player->health_max)
 			{
-				player->team[0]->health = player->team[0]->health_max;
+				player->health = player->health_max;
 				i->count--;
 				player->item_out = 0;
 			}
@@ -549,14 +549,7 @@ void item_update_looper(Item *i, void *p)
 	i->col.origin.x = i->pos.x - 32;
 	i->col.origin.y = i->pos.y - 32;
 
-	if (entity_check_col(&i->col, &i) && !i->collided)
-	{
-		i->collided = true;
-		player->item_out = false;
-		player->battle = false;
-		player_follower_new();
-		scene_swap("over");
-	}
+	entity_check_col(&i->col, i);
 }
 
 void item_use_looper(void *p)

@@ -122,6 +122,7 @@
     <ClInclude Include="..\..\include\gf2d_windows.h" />
     <ClInclude Include="..\..\include\my_attack.h" />
     <ClInclude Include="..\..\include\my_collider.h" />
+    <ClInclude Include="..\..\include\my_editor.h" />
     <ClInclude Include="..\..\include\my_enemy.h" />
     <ClInclude Include="..\..\include\my_entity.h" />
     <ClInclude Include="..\..\include\my_follower.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="..\gf2d_windows.c" />
     <ClCompile Include="..\gfc_color.c" />
     <ClCompile Include="..\my_collider.c" />
+    <ClCompile Include="..\my_editor.c" />
     <ClCompile Include="..\my_enemy.c" />
     <ClCompile Include="..\my_entity.c" />
     <ClCompile Include="..\my_follower.c" />

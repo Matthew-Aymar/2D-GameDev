@@ -28,6 +28,9 @@ typedef struct Attack_S
 	Uint8 projectile;	/*Check if this attack is a projectile*/
 	Vector2D launch;	/*Direction of the projectile*/
 	float speed;		/*Amount to move each step*/
+
+	float stun;			/*Hitstun duration to put on enemies*/
+	int damage;			/*Damage the attack will do to enemies*/
 }Attack;
 
 #endif

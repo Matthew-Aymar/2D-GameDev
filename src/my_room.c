@@ -40,13 +40,20 @@ typedef struct Room_Manager_S
 	Sprite *wall_forward;
 	Sprite *wall_top;
 	Sprite *grass_full;
+	Sprite *rocks_full;
+	Sprite *sand_full;
 	Scene	*scene;
+	int layout[240];
 }Room_Manager;
 
 static Room_Manager room_manager = { 0 };
 
 static int swap;
 static int init = false;
+
+static Uint8 firstRoom = false;
+
+static Uint8 world = 0;
 
 void *room_new(Room *rm, int l[240], float xpos, float ypos, int index)
 {
@@ -61,17 +68,36 @@ void *room_new(Room *rm, int l[240], float xpos, float ypos, int index)
 		if (l[x] == 2)
 		{
 			rm->tiles[x] = tile_new(room_manager.wall_forward,
-				pos, vector2d(64, 64), 1);
+				pos, vector2d(64, 64), 1, firstRoom);
 		}
 		else if (l[x] == 1)
 		{
 			rm->tiles[x] = tile_new(room_manager.wall_top,
-				pos, vector2d(64, 64), 1);
+				pos, vector2d(64, 64), 1, firstRoom);
 		}
 		else
 		{
-			rm->tiles[x] = tile_new(room_manager.grass_full,
-				pos, vector2d(64, 64), 0);
+			if (world == 0)
+			{
+				rm->tiles[x] = tile_new(room_manager.grass_full,
+					pos, vector2d(64, 64), 0, firstRoom);
+			}
+			else if (world == 1)
+			{
+				rm->tiles[x] = tile_new(room_manager.rocks_full,
+					pos, vector2d(64, 64), 0, firstRoom);
+			}
+			else if (world == 2)
+			{
+				rm->tiles[x] = tile_new(room_manager.sand_full,
+					pos, vector2d(64, 64), 0, firstRoom);
+			}
+			else
+			{
+				rm->tiles[x] = tile_new(room_manager.grass_full,
+					pos, vector2d(64, 64), 0, firstRoom);
+			}
+			
 		}
 	}
 	rm->index = index;
@@ -225,7 +251,6 @@ void room_free(Room *rm)
 	{
 		tile_free(&rm->tiles[x]);
 	}
-	//interactable_free(&rm->i);
 	memset(rm, 0, sizeof(Room));
 }
 
@@ -247,6 +272,8 @@ void room_manager_init()
 {
 	int x;
 	Vector2D pos;
+	FILE *map;
+	char layout[241];
 	pos.x = -1320; //-1280 - an offset of 40 so the player starts centered
 	pos.y = -800;  //-768 - an offset of 32
 	room_manager.rooms_active[0] = &room_tl;
@@ -262,11 +289,34 @@ void room_manager_init()
 	room_manager.wall_forward = gf2d_sprite_load_image("images/Tiles/Wall_Forward.png");
 	room_manager.wall_top = gf2d_sprite_load_image("images/Tiles/Wall_Top.png");
 	room_manager.grass_full = gf2d_sprite_load_image("images/Tiles/Grass_Full.png");
+	room_manager.rocks_full = gf2d_sprite_load_image("images/Tiles/Rocks_Full.png");
+	room_manager.sand_full = gf2d_sprite_load_image("images/Tiles/Sand_Full.png");
+
+	map = fopen("map.txt", "r");
+	if (map)
+	{
+		fgets(layout, 241, map);
+		for (x = 0; x < 240; x++)
+		{
+			room_manager.layout[x] = layout[x] - '0';
+		}
+	}
+	else
+	{
+		for (x = 0; x < 240; x++)
+		{
+			room_manager.layout[x] = testlayout[x];
+		}
+	}
 
 	for (x = 0; x < 9; x++)
 	{
+		if (x == 4)
+			firstRoom = true;
+		else
+			firstRoom = false;
 		room_new(room_manager.rooms_active[x],
-					testlayout, 
+					room_manager.layout, 
 					pos.x + (1280 * (x - (3 * (int)(x * 0.334)))),
 					pos.y + (768 * (int)(x * 0.334)), 
 					x);
@@ -312,6 +362,37 @@ void room_manager_scroll(Vector2D movement)
 	}
 }
 
+void room_world_next()
+{
+	if (world <= 2)
+	{
+		room_manager_close();
+		room_manager_init();
+		player_reset_passed();
+	}
+}
+
+void room_boss_setup()
+{
+	room_free(room_manager.rooms_active[0]);
+	room_free(room_manager.rooms_active[1]);
+	room_free(room_manager.rooms_active[2]);
+	room_free(room_manager.rooms_active[3]);
+	room_free(room_manager.rooms_active[5]);
+	room_free(room_manager.rooms_active[6]);
+	room_free(room_manager.rooms_active[7]);
+	room_free(room_manager.rooms_active[8]);
+}
+
+void room_boss_start()
+{
+	world++;
+	player_set_boss(world);
+	player_set_battle();
+	scene_swap("battle");
+	room_world_next();
+}
+
 void room_manager_swap(float xpos, float ypos)
 {
 	Vector2D pos;
@@ -320,6 +401,7 @@ void room_manager_swap(float xpos, float ypos)
 	{
 		return;
 	}
+
 	if (xpos + 32 < room_manager.rooms_active[4]->origin.x)
 	{
 		//swap left
@@ -341,16 +423,29 @@ void room_manager_swap(float xpos, float ypos)
 		room_b = room_bl;
 		room_b.index = 7;
 
-		room_new(&room_tl, testlayout, 
+		room_new(&room_tl, room_manager.layout, 
 			room_manager.rooms_active[4]->origin.x - 1280, 
 			room_manager.rooms_active[4]->origin.y + 768, 0);
-		room_new(&room_l, testlayout,
+		room_new(&room_l, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x - 1280,
 			room_manager.rooms_active[4]->origin.y, 3);
-		room_new(&room_bl, testlayout,
+		room_new(&room_bl, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x - 1280,
 			room_manager.rooms_active[4]->origin.y - 768, 6);
 		swap = 3;
+
+		if (world == 2)
+			return;
+
+		player_room_passed();
+		if (player_get_passed() == 5)
+		{
+			room_boss_setup();
+		}
+		else if (player_get_passed() > 5)
+		{
+			room_boss_start();
+		}
 	}
 	else if (ypos + 32 > room_manager.rooms_active[4]->origin.y + 768)
 	{
@@ -373,16 +468,29 @@ void room_manager_swap(float xpos, float ypos)
 		room_r = room_br;
 		room_r.index = 5;
 
-		room_new(&room_bl, testlayout,
+		room_new(&room_bl, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x - 1280,
 			room_manager.rooms_active[4]->origin.y - 768, 6);
-		room_new(&room_b, testlayout,
+		room_new(&room_b, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x,
 			room_manager.rooms_active[4]->origin.y - 768, 7);
-		room_new(&room_br, testlayout,
+		room_new(&room_br, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x + 1280,
 			room_manager.rooms_active[4]->origin.y - 768, 8);
 		swap = 7;
+
+		if (world == 2)
+			return;
+
+		player_room_passed();
+		if (player_get_passed() == 5)
+		{
+			room_boss_setup();
+		}
+		else if (player_get_passed() > 5)
+		{
+			room_boss_start();
+		}
 	}
 	else if (xpos + 32 > room_manager.rooms_active[4]->origin.x + 1280)
 	{
@@ -405,16 +513,29 @@ void room_manager_swap(float xpos, float ypos)
 		room_b = room_br;
 		room_b.index = 7;
 
-		room_new(&room_tr, testlayout,
+		room_new(&room_tr, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x + 1280,
 			room_manager.rooms_active[4]->origin.y + 768, 2);
-		room_new(&room_r, testlayout,
+		room_new(&room_r, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x + 1280,
 			room_manager.rooms_active[4]->origin.y, 5);
-		room_new(&room_br, testlayout,
+		room_new(&room_br, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x + 1280,
 			room_manager.rooms_active[4]->origin.y - 768, 8);
 		swap = 5;
+
+		if (world == 2)
+			return;
+
+		player_room_passed();
+		if (player_get_passed() == 5)
+		{
+			room_boss_setup();
+		}
+		else if (player_get_passed() > 5)
+		{
+			room_boss_start();
+		}
 	}
 	else if(ypos + 32 < room_manager.rooms_active[4]->origin.y)
 	{
@@ -437,16 +558,29 @@ void room_manager_swap(float xpos, float ypos)
 		room_r = room_tr;
 		room_r.index = 5;
 
-		room_new(&room_tl, testlayout,
+		room_new(&room_tl, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x - 1280,
 			room_manager.rooms_active[4]->origin.y + 768, 0);
-		room_new(&room_t, testlayout,
+		room_new(&room_t, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x,
 			room_manager.rooms_active[4]->origin.y + 768, 1);
-		room_new(&room_tr, testlayout,
+		room_new(&room_tr, room_manager.layout,
 			room_manager.rooms_active[4]->origin.x + 1280,
 			room_manager.rooms_active[4]->origin.y + 768, 2);
 		swap = 1;
+
+		if (world == 2)
+			return;
+
+		player_room_passed();
+		if (player_get_passed() == 5)
+		{
+			room_boss_setup();
+		}
+		else if (player_get_passed() > 5)
+		{
+			room_boss_start();
+		}
 	}
 }
 
@@ -464,4 +598,9 @@ int room_check_col(RectCol *col)
 		}
 	}
 	return false;
+}
+
+void room_set_interactables(Uint8 b)
+{
+	firstRoom = !b;
 }

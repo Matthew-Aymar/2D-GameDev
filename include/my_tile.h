@@ -23,7 +23,7 @@ typedef struct Tile_S
 	@param solid - whether the tile should have a collider or not
 	@note creates a tile by new blank and new col
 */
-Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid);
+Tile tile_new(Sprite *s, Vector2D pos, Vector2D size, int solid, Uint8 first);
 
 /*
 	@brief draw the tile to the screen

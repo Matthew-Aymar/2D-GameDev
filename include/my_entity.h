@@ -47,6 +47,8 @@ void entity_manager_init(Uint32 maxEnts);
 */
 void entity_free(Entity *self);
 
+void entity_manager_close();
+
 /*
 	@brief update every active entity
 */

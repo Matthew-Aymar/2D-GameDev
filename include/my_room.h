@@ -70,4 +70,6 @@ void room_manager_swap(float xpos, float ypos);
 
 int room_check_col(RectCol *col);
 
+void room_set_interactables(Uint8 b);
+
 #endif

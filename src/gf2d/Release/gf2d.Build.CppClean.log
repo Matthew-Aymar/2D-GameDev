@@ -19,12 +19,12 @@ d:\git\gameframework2d\src\gf2d\release\simple_json_list.obj
 d:\git\gameframework2d\src\gf2d\release\simple_json_error.obj
 d:\git\gameframework2d\src\gf2d\release\simple_json_array.obj
 d:\git\gameframework2d\src\gf2d\release\simple_json.obj
-d:\git\gameframework2d\src\gf2d\release\my_interactable.obj
-d:\git\gameframework2d\src\gf2d\release\my_follower.obj
-d:\git\gameframework2d\src\gf2d\release\my_tile.obj
 d:\git\gameframework2d\src\gf2d\release\my_scene.obj
 d:\git\gameframework2d\src\gf2d\release\my_room.obj
 d:\git\gameframework2d\src\gf2d\release\my_player.obj
+d:\git\gameframework2d\src\gf2d\release\my_item.obj
+d:\git\gameframework2d\src\gf2d\release\my_interactable.obj
+d:\git\gameframework2d\src\gf2d\release\my_follower.obj
 d:\git\gameframework2d\src\gf2d\release\my_entity.obj
 d:\git\gameframework2d\src\gf2d\release\my_enemy.obj
 d:\git\gameframework2d\src\gf2d\release\my_collider.obj
@@ -39,7 +39,8 @@ d:\git\gameframework2d\src\gf2d\release\gf2d_element_list.obj
 d:\git\gameframework2d\src\gf2d\release\gf2d_element_label.obj
 d:\git\gameframework2d\src\gf2d\release\gf2d_element_button.obj
 d:\git\gameframework2d\src\gf2d\release\gf2d_element_actor.obj
-d:\git\gameframework2d\src\gf2d\release\my_item.obj
+d:\git\gameframework2d\src\gf2d\release\my_tile.obj
+d:\git\gameframework2d\src\gf2d\release\my_editor.obj
 d:\git\gameframework2d\gf2d.exe
 d:\git\gameframework2d\gf2d.pdb
 d:\git\gameframework2d\src\gf2d\..\..\gf2d.exe

@@ -54,6 +54,15 @@ typedef struct
 	Uint8 can_interact;
 
 	Uint8 grounded;		/*User cannot act if not grounded*/
+	
+	int health;
+	int health_max;
+
+	int enemy_health;
+	int enemy_health_max;
+
+	Uint8 rooms_passed;
+	Uint8 next_boss;
 }Player;
 
 /*
@@ -113,6 +122,11 @@ RectCol *player_get_rect();
 CirCol *player_get_circle();
 
 /*
+	@brief returns the player's follower collider for combat collisions
+*/
+CirCol *player_get_follower_circle();
+
+/*
 	@brief get players last movement
 	@return x and y position
 */
@@ -160,8 +174,34 @@ void player_clear_interact();
 
 Vector2D player_get_interact_pos();
 
-void player_follower_new();
+void player_follower_new(Uint8 id);
 
 void player_restock();
 
+Vector2D player_position();
+
+/*
+	@brief set to let the player keep track of enemy hp
+*/
+void player_set_enemy_health(int current, int max);
+
+/*
+	@brief deal damage to the player 
+*/
+void player_damage(int amount);
+
+/*
+	@brief deal damage to the player's current follower
+*/
+void player_follower_damage(int amount);
+
+void player_room_passed();
+
+void player_reset_passed();
+
+int player_get_passed();
+
+void player_set_boss();
+
+int player_get_boss();
 #endif

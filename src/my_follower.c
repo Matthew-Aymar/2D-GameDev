@@ -21,6 +21,9 @@ static char *projectile_sprite = "images/FollowerSprites/projectile.png";
 
 void follower_new(Follower *f, Uint8 id)
 {
+	if (f->set)
+		return;
+
 	switch (id)
 	{
 		case 0:
@@ -34,7 +37,6 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 2;
 			f->sprite = gf2d_sprite_load_image(djinn_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Djinn";
 		break;
 		case 1:
@@ -48,7 +50,6 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 4;
 			f->sprite = gf2d_sprite_load_image(leviathan_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Leviathan";
 		break;
 		case 2:
@@ -62,7 +63,6 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 4;
 			f->sprite = gf2d_sprite_load_image(leshen_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Leshen";
 		break;
 		case 3:
@@ -76,7 +76,6 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 1;
 			f->sprite = gf2d_sprite_load_image(basilisk_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Basilisk";
 		break;
 		case 4:
@@ -90,7 +89,6 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 2;
 			f->sprite = gf2d_sprite_load_image(griffin_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Wisp";
 		break;
 		case 5:
@@ -104,16 +102,19 @@ void follower_new(Follower *f, Uint8 id)
 			f->defense = 5;
 			f->sprite = gf2d_sprite_load_image(golemn_sprite);
 			f->mode = 0;
-			f->col = col_new_circle(0, 0, 16, 1);
 			f->name = "Golemn";
 		break;
 	}
+
+	f->col = col_new_circle(0, 0, 24, 1);
 
 	f->target = entity_get_closest(f->pos);
 
 	f->ranged.sprite = gf2d_sprite_load_image(projectile_sprite);
 	f->ranged.knockback = vector2d(1, 1);
 	f->ranged.force = 15;
+	f->ranged.stun = 1;
+	f->ranged.damage = 1 + (int)(f->magic / 5);
 	f->scene = scene_get("battle");
 
 	f->set = true;
@@ -191,7 +192,8 @@ void follower_update(void *player, Follower *f)
 		}
 	}
 
-	f->col.origin = f->pos;
+	f->col.origin.x = f->pos.x + 24;
+	f->col.origin.y = f->pos.y + 24;
 
 	follower_update_attack(f);
 }

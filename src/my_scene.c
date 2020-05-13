@@ -12,7 +12,7 @@ static Sprite *arena_rim;
 static Entity *temp;
 void scene_init()
 {
-	over.background = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
+	over.background = NULL;
 	over._active = 1;
 	over._anim	 = 0;
 	over._arena  = 0;
@@ -130,9 +130,22 @@ void scene_swap(char *s)
 	}
 	else if (strcmp(s, "battle") == 0)
 	{
+		if (player_get_boss())
+		{
+			temp = entity_new();
+			temp->position = vector2d(552, 552);
+			temp->fpl = 0;
+			temp->scene = scene_get("battle");
+			temp->isEnm = true;
+			temp->enm.boss = player_get_boss();
+			enemy_new(&temp->enm);
+			over._active = 0;
+			battle._active = 1;
+			return;
+		}
+
 		temp = entity_new();
-		temp->position = vector2d(536, 536);
-		temp->sprite = gf2d_sprite_load_image("images/dummy.png");
+		temp->position = vector2d(576, 576);
 		temp->fpl = 0;
 		temp->scene = scene_get("battle");
 		temp->isEnm = true;
